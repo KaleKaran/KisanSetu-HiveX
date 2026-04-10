@@ -7,11 +7,12 @@ import FarmForm from './components/Inputs/FarmForm';
 import UsageCharts from './components/Analytics/UsageCharts';
 import AlertsPage from './components/Alerts/AlertsPage';
 import VoiceAssistant from './components/VoiceAssistant/VoiceMic';
+import LoginPage from './components/Auth/LoginPage';
+import GPDashboard from './components/GramPanchayat/GPDashboard';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const MainLayout = () => {
+const FarmerLayout = ({ onLogout }) => {
   const [activeTab, setActiveTab] = useState('dashboard');
-  const { theme } = useApp();
 
   const renderContent = () => {
     switch (activeTab) {
@@ -24,9 +25,9 @@ const MainLayout = () => {
   };
 
   return (
-    <div className={`min-h-screen ${theme === 'dark' ? 'dark' : ''}`}>
-      <div className="bg-slate-50 dark:bg-slate-950 font-inter text-slate-900 dark:text-slate-100 min-h-screen transition-colors duration-500">
-        <Sidebar activeTab={activeTab} onTabSelect={setActiveTab} />
+    <div className="min-h-screen">
+      <div className="bg-slate-50 font-inter text-slate-900 min-h-screen transition-colors duration-500">
+        <Sidebar activeTab={activeTab} onTabSelect={setActiveTab} onLogout={onLogout} />
         <div className="lg:pl-80 min-h-screen transition-all duration-500">
           <Navbar />
           <main className="p-8 lg:p-12 pt-32 lg:pt-32 max-w-7xl mx-auto pb-24 relative z-0">
@@ -50,9 +51,38 @@ const MainLayout = () => {
 };
 
 function App() {
+  const [userSession, setUserSession] = useState(null);
+
+  const handleLogin = (role, userData) => {
+    setUserSession({ role, ...userData });
+  };
+
+  const handleLogout = () => {
+    setUserSession(null);
+  };
+
+  // Not logged in → Login Page
+  if (!userSession) {
+    return (
+      <AppProvider>
+        <LoginPage onLogin={handleLogin} />
+      </AppProvider>
+    );
+  }
+
+  // Gram Panchayat Operator
+  if (userSession.role === 'gp_operator') {
+    return (
+      <AppProvider>
+        <GPDashboard operator={userSession} onLogout={handleLogout} />
+      </AppProvider>
+    );
+  }
+
+  // Farmer
   return (
     <AppProvider>
-      <MainLayout />
+      <FarmerLayout onLogout={handleLogout} />
     </AppProvider>
   );
 }
