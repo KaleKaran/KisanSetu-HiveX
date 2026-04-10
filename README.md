@@ -1,89 +1,129 @@
 # KisanSetu-HiveX
-Offline-first smart agriculture system using ML and IoT concepts to provide fertilizer and irrigation recommendations based on soil and environmental data.
 
-# Smart Fertilizer Recommendation System (ML Module)
-
-## Overview
-This repository contains the initial version of our Smart Agriculture Project, focused on building a machine learning model for fertilizer recommendation.
-
-The goal of this module is to analyze soil nutrient levels and environmental conditions to predict the most suitable fertilizer for a given crop scenario.
-
-This version represents the **core intelligence layer** of the system.
+> Offline-first smart agriculture system using ML and IoT concepts to provide fertilizer and irrigation recommendations based on soil and environmental data.
 
 ---
 
-## What This Version Includes
+## About
 
-- Data preprocessing and cleaning  
-- Feature selection based on soil and environmental parameters  
-- Model training using Random Forest  
-- Model evaluation  
-- Model serialization for future integration  
+KisanSetu is a full-stack smart farming platform (in progress). This repo tracks the evolution from an ML recommendation engine to a complete frontend dashboard.
 
 ---
 
-## Dataset Description
+## What's in this repo
 
-The model is trained on a dataset containing the following features:
+### v1.0 — ML Module (notebooks/)
+The initial version focused on building the core intelligence layer — a machine learning model for fertilizer recommendation based on soil nutrient levels (NPK), pH, moisture, and crop type.
 
-- **Nitrogen (N)**
-- **Phosphorus (P)**
-- **Potassium (K)**
-- **Soil Moisture**
-- **Temperature**
-- **Humidity**
-- **pH Level**
-
-**Target Output:**
-- Recommended Fertilizer Type
+- `notebooks/RKdemy_Model_Building.ipynb` — model training, evaluation, and selection
+- `notebooks/RKdemy_Fertilizer_Recommendation_Backend.ipynb` — backend logic and prediction pipeline
 
 ---
 
-## Model Details
-
-- **Algorithm Used:** Random Forest Classifier  
-- **Reason for Selection:**
-  - Handles non-linear relationships effectively  
-  - Robust against overfitting  
-  - Performs well on structured agricultural data  
-
-- The model is trained using standard train-test split and evaluated on prediction accuracy.
+### v2.0 — Frontend UI Prototype (kisan-setu/)
+A React-based dashboard prototype built for QuantHacks. All sensor data and recommendations were mocked — no backend connected.
 
 ---
 
-## Outputs Generated
+### v3.0 — Full Stack Integration
+The ML model is now connected to a live Flask backend. The frontend calls the real `/predict` API and displays actual model output — fertilizer recommendation, dosage, NPK status, pH status, and advisory notes.
 
-- Trained model file (`.pkl`)  
-- Jupyter Notebook (`.ipynb`) containing full pipeline:
-  - Data preprocessing  
-  - Model training  
-  - Evaluation  
-
----
-
-## Current Limitations
-
-This version is limited to the machine learning component only.
-
-- No frontend interface  
-- No backend/API integration  
-- No real-time data input  
-- Works only on static dataset  
+- `Kisan-Setu_Frontend/` — React + Vite + Tailwind frontend
+- `Kisan-Setu_Backend/app.py` — Flask API serving the ML model
+- `Kisan-Setu_Model_and_Encoders/` — trained Random Forest model + scikit-learn encoders
+- `notebooks/RKdemy_Model_Building_v2.ipynb` — updated model training
+- `notebooks/RKdemy_Fertilizer_Recommendation_Backend_v2.ipynb` — updated inference pipeline
 
 ---
 
-## Next Steps
+## Pages
 
-Future versions of this project will include:
+### Dashboard
+Real-time field monitoring with sensor cards (soil moisture, pH, temperature, humidity), hydration & temperature trend charts, NPK balance, and system alerts.
 
-- Backend integration (Flask API)  
-- Frontend user interface  
-- Data storage (history tracking)  
-- Sensor data integration (real or simulated)  
-- Irrigation recommendation logic  
+![Dashboard](screenshots/Home_Page.png)
 
 ---
 
-## Note
+### Optimization Protocol (Inputs)
+Select crop type, growth stage, and soil type — the form calls the Flask backend and returns a live fertilizer recommendation with dosage, NPK status, and advisory.
 
-This is the initial development stage of the project and focuses only on building a reliable machine learning model. Further system integration will be developed in subsequent versions.
+![Inputs](screenshots/Input_Page.png)
+
+---
+
+### Consumption Analytics
+Monthly water usage bar chart and fertilizer NPK distribution pie chart.
+
+![Analytics](screenshots/Usage_Page.png)
+
+---
+
+### System Alerts
+Sensor health alerts (critical / warning / info) with investigation notes and acknowledge actions.
+
+![Alerts](screenshots/Alerts_Page.png)
+
+---
+
+## Features (v3.0)
+
+- Live ML prediction via Flask API (`/predict`)
+- Random Forest model with 7 crop types, 4 soil types, 4 growth stages
+- Fertilizer recommendation + dosage + NPK + pH status returned from model
+- Save record as JSON or export as text report
+- Dark / Light mode toggle
+- Animated page transitions via Framer Motion
+- Floating AI Voice Assistant (UI only)
+- Fully responsive layout with Tailwind CSS
+
+---
+
+## Tech Stack
+
+| Layer | Stack |
+|---|---|
+| Frontend | React 19, Vite 8, Tailwind CSS v4 |
+| Animations | Framer Motion |
+| Charts | Recharts |
+| Icons | Lucide React |
+| Backend | Python, Flask, Flask-CORS |
+| ML Model | Random Forest Classifier (scikit-learn) |
+| Encoders | joblib, LabelEncoder |
+
+---
+
+## Run Locally
+
+### 1. Backend
+```bash
+conda create -n RKdemy python=3.10 -y
+conda activate RKdemy
+pip install scikit-learn pandas numpy joblib flask flask-cors
+python Kisan-Setu_Backend/app.py
+```
+Backend runs at `http://127.0.0.1:5000`
+
+### 2. Frontend
+```bash
+cd Kisan-Setu_Frontend
+npm install
+npm run dev
+```
+
+---
+
+## Roadmap
+
+- [x] ML model for fertilizer recommendation (notebooks/)
+- [x] Frontend UI prototype (kisan-setu/)
+- [x] Flask backend + ML integration
+- [ ] Live IoT sensor integration
+- [ ] Data Logging and Retrieval
+- [ ] Gram Panchayat Dashboard
+- [ ] User authentication
+- [ ] Docker Container
+
+---
+
+> Built as a hackathon prototype at QuantHacks. Backend + ML integration is the next step.
