@@ -31,8 +31,8 @@ The ML model is now connected to a live Flask backend. The frontend calls the re
 - `Kisan-Setu_Frontend/` — React + Vite + Tailwind frontend
 - `Kisan-Setu_Backend/app.py` — Flask API serving the ML model
 - `Kisan-Setu_Model_and_Encoders/` — trained Random Forest model + scikit-learn encoders
-- `notebooks/RKdemy_Model_Building_v2.ipynb` — updated model training
-- `notebooks/RKdemy_Fertilizer_Recommendation_Backend_v2.ipynb` — updated inference pipeline
+- `notebooks/RKdemy_Model_Building.ipynb` — model training, evaluation, and selection
+- `notebooks/RKdemy_Fertilizer_Recommendation_Backend.ipynb` — backend logic and prediction pipeline
 
 ---
 
