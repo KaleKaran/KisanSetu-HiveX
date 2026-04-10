@@ -5,7 +5,7 @@ const SensorCard = ({ title, value, unit, icon: Icon, colorClass, trend }) => {
   return (
     <motion.div
       whileHover={{ y: -5, scale: 1.02 }}
-      className="bg-white dark:bg-slate-900 p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-slate-800 flex flex-col justify-between h-48 relative overflow-hidden group"
+      className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col justify-between h-48 relative overflow-hidden group"
     >
       <div className={`absolute -right-6 -bottom-6 opacity-[0.03] group-hover:opacity-[0.08] transition-opacity duration-500 scale-[2.5]`}>
         <Icon className="w-24 h-24" />
@@ -23,12 +23,12 @@ const SensorCard = ({ title, value, unit, icon: Icon, colorClass, trend }) => {
       </div>
 
       <div className="relative z-10">
-        <p className="text-slate-400 dark:text-slate-500 text-xs font-bold uppercase tracking-widest mb-1">{title}</p>
+        <p className="text-slate-400 text-xs font-bold uppercase tracking-widest mb-1">{title}</p>
         <div className="flex items-baseline gap-1.5">
-          <h3 className="text-3xl font-black text-slate-800 dark:text-white tabular-nums tracking-tight">
+          <h3 className="text-3xl font-black text-slate-800 tabular-nums tracking-tight">
             {typeof value === 'number' ? value.toFixed(1) : value}
           </h3>
-          <span className="text-slate-400 dark:text-slate-500 font-bold text-sm tracking-tight">{unit}</span>
+          <span className="text-slate-400 font-bold text-sm tracking-tight">{unit}</span>
         </div>
       </div>
     </motion.div>
