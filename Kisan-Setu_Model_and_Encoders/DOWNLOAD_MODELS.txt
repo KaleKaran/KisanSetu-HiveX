@@ -1,0 +1,14 @@
+The trained model and encoder files are not stored in this repository due to file size constraints.
+
+Download them from Google Drive and place them in this folder:
+
+https://drive.google.com/drive/folders/1ptWypmOS_HXBpRZ3mI-esfVHQgsSzf4C?usp=sharing
+
+Required files:
+- fertilizer_model_final_V2.pkl
+- crop_encoder.pkl
+- fert_encoder.pkl
+- soil_encoder.pkl
+- stage_encoder.pkl
+- feature_columns.pkl
+- nutrient_thresholds.pkl
