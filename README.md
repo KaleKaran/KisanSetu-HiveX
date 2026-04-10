@@ -28,6 +28,11 @@ A React-based dashboard prototype built for QuantHacks. All sensor data and reco
 ### v3.0 — Full Stack Integration
 The ML model is now connected to a live Flask backend. The frontend calls the real `/predict` API and displays actual model output — fertilizer recommendation, dosage, NPK status, pH status, and advisory notes.
 
+---
+
+### v4.0 — Gram Panchayat Module + New UI Features
+Added role-based login (Farmer vs Gram Panchayat Operator), a full GP dashboard for managing multiple farmer records, Farm Plan Builder with cost estimator, soil type visual previews, and various UI improvements.
+
 - `Kisan-Setu_Frontend/` — React + Vite + Tailwind frontend
 - `Kisan-Setu_Backend/app.py` — Flask API serving the ML model
 - `Kisan-Setu_Model_and_Encoders/` — trained Random Forest model + scikit-learn encoders
@@ -38,6 +43,13 @@ The ML model is now connected to a live Flask backend. The frontend calls the re
 
 ## Pages
 
+### Landing / Login
+Role selection screen — Farmer login (direct access) or Gram Panchayat Operator login with credentials.
+
+![Landing Page](screenshots/Landing%20Page.png)
+
+---
+
 ### Dashboard
 Real-time field monitoring with sensor cards (soil moisture, pH, temperature, humidity), hydration & temperature trend charts, NPK balance, and system alerts.
 
@@ -46,7 +58,7 @@ Real-time field monitoring with sensor cards (soil moisture, pH, temperature, hu
 ---
 
 ### Optimization Protocol (Inputs)
-Select crop type, growth stage, and soil type — the form calls the Flask backend and returns a live fertilizer recommendation with dosage, NPK status, and advisory.
+Select crop type, growth stage, and soil type — calls the Flask backend and returns a live fertilizer recommendation with dosage, NPK status, and advisory.
 
 ![Inputs](screenshots/Input_Page.png)
 
@@ -66,13 +78,30 @@ Sensor health alerts (critical / warning / info) with investigation notes and ac
 
 ---
 
-## Features (v3.0)
+### Gram Panchayat Dashboard
+Operator view — manage multiple farmer records, view per-farmer sensor data, generate and export AI recommendations as text reports.
 
+![GP Dashboard](screenshots/GP.png)
+
+---
+
+### Farm Plan Builder
+Interactive cost estimator — answers a few questions about connectivity and power availability to recommend a hardware setup with cost breakdown.
+
+![Farm Plan Builder](screenshots/Costing.png)
+
+---
+
+## Features (v4.0)
+
+- Role-based login — Farmer and Gram Panchayat Operator
+- Gram Panchayat dashboard — manage multiple farmer records, live sync, export reports
+- Farm Plan Builder with hardware cost estimator
+- Soil type visual previews on hover
 - Live ML prediction via Flask API (`/predict`)
-- Random Forest model with 7 crop types, 4 soil types, 4 growth stages
-- Fertilizer recommendation + dosage + NPK + pH status returned from model
+- Random Forest model — 7 crop types, 4 soil types, 4 growth stages
+- Fertilizer recommendation + dosage + NPK + pH status from model
 - Save record as JSON or export as text report
-- Dark / Light mode toggle
 - Animated page transitions via Framer Motion
 - Floating AI Voice Assistant (UI only)
 - Fully responsive layout with Tailwind CSS
@@ -116,12 +145,12 @@ npm run dev
 ## Roadmap
 
 - [x] ML model for fertilizer recommendation (notebooks/)
-- [x] Frontend UI prototype (kisan-setu/)
+- [x] Frontend UI prototype
 - [x] Flask backend + ML integration
-- [ ] Live IoT sensor integration
-- [ ] Data Logging and Retrieval
-- [ ] Gram Panchayat Dashboard
-- [ ] User authentication
+- [x] Gram Panchayat dashboard + role-based login
+- [x] Farm Plan Builder + cost estimator
+- [ ] Database integration (history logging)
+- [ ] User authentication (persistent sessions)
 - [ ] Docker Container
 
 ---

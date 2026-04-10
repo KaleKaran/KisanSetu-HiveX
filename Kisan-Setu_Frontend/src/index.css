@@ -2,15 +2,9 @@
 @import "tailwindcss";
 @config "../tailwind.config.js";
 
-
 :root {
   --bg-primary: #f8fafc;
   --text-primary: #0f172a;
-}
-
-.dark {
-  --bg-primary: #0f172a;
-  --text-primary: #f8fafc;
 }
 
 body {
@@ -21,10 +15,6 @@ body {
   @apply bg-white/70 backdrop-blur-md border border-white/20 shadow-xl;
 }
 
-.dark .glass {
-  @apply bg-slate-900/70 border-slate-700/30 shadow-none;
-}
-
 .card-hover {
   @apply transition-all duration-300 hover:shadow-2xl hover:-translate-y-1;
 }
@@ -33,19 +23,15 @@ body {
   @apply border-2 border-slate-900 shadow-[4px_4px_0px_0px_rgba(15,23,42,1)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all;
 }
 
-.dark .neo-brutalism {
-  @apply border-white/20 shadow-[4px_4px_0px_0px_rgba(255,255,255,0.1)];
-}
-
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  @apply bg-slate-100 dark:bg-slate-800;
+  @apply bg-slate-100;
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-slate-300 dark:bg-slate-600 rounded-full hover:bg-slate-400;
+  @apply bg-slate-300 rounded-full hover:bg-slate-400;
 }

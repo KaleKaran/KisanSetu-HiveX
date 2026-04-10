@@ -3,6 +3,20 @@ import { useApp } from '../../context/AppContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Database, Sprout, MapPin, Calendar, CheckCircle2, Loader2, Sparkles, Droplets, FlaskConical, RefreshCw, Zap } from 'lucide-react';
 
+const stageInfo = {
+  'stage_sowing': 'Seeds are planted and begin to sprout.',
+  'stage_vegetative': 'Plant grows extensive vegetative structures.',
+  'stage_flowering': 'Plant produces flowers and enters reproductive phase.',
+  'stage_harvest': 'Crop reaches full maturity for collection.'
+};
+
+const soilImages = {
+  'soil_clay': '/soil-types/clay.jpg',
+  'soil_sandy': '/soil-types/sandy.jpg',
+  'soil_loamy': '/soil-types/loam.jpg',
+  'soil_silt': '/soil-types/silt.jpg'
+};
+
 const FarmForm = () => {
   const { t, getRecommendation, recommendation, setRecommendation, randomizeSensors, saveRecord } = useApp();
   const [loading, setLoading] = useState(false);
@@ -87,14 +101,40 @@ const FarmForm = () => {
                   <Database className="w-3 h-3" />
                   {t('growth_stage')}
                 </label>
-                <select 
-                  value={formData.growthStage}
-                  onChange={(e) => setFormData({...formData, growthStage: e.target.value})}
-                  className="w-full px-6 py-4 bg-slate-50 dark:bg-slate-800 text-slate-600 rounded-2xl font-bold text-sm border-2 border-transparent focus:border-kisan-green-500 outline-none transition-all appearance-none cursor-pointer"
-                >
-                  <option value="">Select Stage</option>
-                  {stages.map(s => <option key={s} value={s}>{t(s)}</option>)}
-                </select>
+                <div className="grid grid-cols-2 gap-2">
+                  {stages.map((stage) => (
+                    <motion.div 
+                      key={stage} 
+                      className="relative"
+                      whileHover="hover"
+                      initial="initial"
+                    >
+                      <button
+                        type="button"
+                        onClick={() => setFormData({...formData, growthStage: stage})}
+                        className={`w-full px-6 py-4 rounded-2xl text-[11px] font-bold tracking-widest transition-all border-2 flex items-center justify-between group ${
+                          formData.growthStage === stage 
+                          ? 'bg-kisan-green-500 text-white border-kisan-green-500 shadow-md' 
+                          : 'bg-slate-50 dark:bg-slate-800/50 border-transparent text-slate-500 hover:border-slate-200'
+                        }`}
+                      >
+                        {t(stage)}
+                        {formData.growthStage === stage && <CheckCircle2 className="w-4 h-4 text-white" />}
+                      </button>
+                      <motion.div
+                        variants={{
+                          initial: { opacity: 0, y: 10, scale: 0.95, pointerEvents: "none" },
+                          hover: { opacity: 1, y: 0, scale: 1, pointerEvents: "none", transition: { type: "spring", stiffness: 400, damping: 25 } }
+                        }}
+                        className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 w-48 p-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-2xl shadow-xl z-50 flex flex-col items-center"
+                      >
+                        <p className="text-[11px] font-bold text-center w-full leading-relaxed">{stageInfo[stage]}</p>
+                        <div className="absolute top-full left-1/2 -translate-x-1/2 border-[6px] border-transparent border-t-slate-200 dark:border-t-slate-700"></div>
+                        <div className="absolute top-[calc(100%-2px)] left-1/2 -translate-x-1/2 border-[6px] border-transparent border-t-white dark:border-t-slate-800"></div>
+                      </motion.div>
+                    </motion.div>
+                  ))}
+                </div>
               </div>
 
               <div className="space-y-4">
@@ -104,18 +144,35 @@ const FarmForm = () => {
                 </label>
                 <div className="flex flex-wrap gap-2">
                   {soils.map((soil) => (
-                    <button
-                      key={soil}
-                      type="button"
-                      onClick={() => setFormData({...formData, soilType: soil})}
-                      className={`px-5 py-3 rounded-xl text-[10px] font-black tracking-widest uppercase transition-all border-2 ${
-                        formData.soilType === soil 
-                        ? 'bg-kisan-green-500 text-white border-kisan-green-500 shadow-md' 
-                        : 'bg-slate-50 dark:bg-slate-800/50 border-transparent text-slate-400 hover:bg-white'
-                      }`}
+                    <motion.div 
+                      key={soil} 
+                      className="relative"
+                      whileHover="hover"
+                      initial="initial"
                     >
-                      {t(soil)}
-                    </button>
+                      <button
+                        type="button"
+                        onClick={() => setFormData({...formData, soilType: soil})}
+                        className={`px-5 py-3 rounded-xl text-[10px] font-black tracking-widest uppercase transition-all border-2 ${
+                          formData.soilType === soil 
+                          ? 'bg-kisan-green-500 text-white border-kisan-green-500 shadow-md' 
+                          : 'bg-slate-50 dark:bg-slate-800/50 border-transparent text-slate-400 hover:bg-white hover:border-slate-200 dark:hover:bg-slate-800'
+                        }`}
+                      >
+                        {t(soil)}
+                      </button>
+                      <motion.div
+                        variants={{
+                          initial: { opacity: 0, y: 10, scale: 0.95, pointerEvents: "none" },
+                          hover: { opacity: 1, y: 0, scale: 1, pointerEvents: "none", transition: { type: "spring", stiffness: 400, damping: 25 } }
+                        }}
+                        className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 w-36 p-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-xl z-50 flex flex-col items-center"
+                      >
+                        <img src={soilImages[soil]} alt={soil} className="w-full aspect-square object-cover rounded-xl border border-slate-100 dark:border-slate-700" />
+                        <div className="absolute top-full left-1/2 -translate-x-1/2 border-[6px] border-transparent border-t-slate-200 dark:border-t-slate-700"></div>
+                        <div className="absolute top-[calc(100%-2px)] left-1/2 -translate-x-1/2 border-[6px] border-transparent border-t-white dark:border-t-slate-800"></div>
+                      </motion.div>
+                    </motion.div>
                   ))}
                 </div>
               </div>
