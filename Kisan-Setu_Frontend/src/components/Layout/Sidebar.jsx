@@ -1,5 +1,6 @@
 import React from 'react';
 import { useApp } from '../../context/AppContext';
+import { useAuth } from '../../context/AuthContext';
 import { LayoutDashboard, Database, BarChart3, Bell, Settings, LogOut, ChevronRight } from 'lucide-react';
 
 const SidebarItem = ({ icon: Icon, label, id, active, onClick }) => (
@@ -25,6 +26,8 @@ const SidebarItem = ({ icon: Icon, label, id, active, onClick }) => (
 
 const Sidebar = ({ activeTab, onTabSelect, onLogout }) => {
   const { t } = useApp();
+  const { session, dataMode } = useAuth();
+  const user = session?.user || { display_name: 'Guest', role: 'Unknown' };
 
   const menuItems = [
     { id: 'dashboard', icon: LayoutDashboard, label: t('dashboard') },
@@ -35,7 +38,7 @@ const Sidebar = ({ activeTab, onTabSelect, onLogout }) => {
 
   return (
     <aside className="fixed left-0 top-0 bottom-0 w-80 bg-white border-r border-slate-100 z-[60] p-6 flex flex-col transition-all duration-300">
-      <div className="flex items-center gap-3.5 mb-12 group cursor-pointer">
+      <div className="flex items-center gap-3.5 mb-10 group cursor-pointer">
         <div className="p-3 bg-kisan-green-100 rounded-2xl rotate-[-6deg] group-hover:rotate-0 transition-all duration-500 shadow-sm border border-kisan-green-200/50">
           <span className="text-3xl">🌱</span>
         </div>
@@ -44,6 +47,16 @@ const Sidebar = ({ activeTab, onTabSelect, onLogout }) => {
             KISAN <span className="text-kisan-green-600">SETU</span>
           </h1>
           <p className="text-[10px] font-bold text-slate-400 tracking-[0.2em] uppercase mt-1">Smart Agriculture</p>
+        </div>
+      </div>
+
+      <div className="mb-8 p-4 bg-slate-50 rounded-3xl border border-slate-100 flex items-center gap-4">
+        <div className="w-10 h-10 bg-white rounded-2xl flex items-center justify-center text-xl shadow-sm border border-slate-100">
+            {user.role === 'farmer' ? '👨‍🌾' : '🏢'}
+        </div>
+        <div className="overflow-hidden">
+            <p className="text-xs font-black text-slate-800 truncate uppercase tracking-tight">{user.display_name}</p>
+            <p className="text-[9px] font-black text-kisan-green-600 uppercase tracking-widest">{user.role} | {dataMode}</p>
         </div>
       </div>
 

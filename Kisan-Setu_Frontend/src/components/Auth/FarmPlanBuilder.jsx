@@ -11,20 +11,22 @@ const FarmPlanBuilder = () => {
     cloudFeatures: null  // Yes / No
   });
 
-  const baseSetupCost = 1000;
-  const sensorsCost = 2500;
+  const baseSetupCost = 5378; // ESP32 Controller (₹378) + TP-Link Router (₹5000)
 
   const handleStart = () => setStep(1);
 
   const calculateCosts = () => {
-    let oneTime = baseSetupCost + sensorsCost;
+    let oneTime = baseSetupCost;
     let monthly = 0;
 
+    if (answers.powerCuts === 'Yes') {
+      oneTime += 136466; // 5kWh Battery, 2.2kW Solar, Hybrid Inverter kit & BOS
+    }
+
     if (answers.hasSmartphone === 'No') {
-      if (answers.smsUpdate) monthly += 500;
+      if (answers.smsUpdate) monthly += 225; // SIM pack + SMS gateway average costs
     } else if (answers.hasSmartphone === 'Yes') {
-      if (answers.powerCuts === 'Yes') oneTime += 8000;
-      if (answers.cloudFeatures === 'Yes') oneTime += 3000;
+      if (answers.cloudFeatures === 'Yes') monthly += 1112; // AWS EC2, RDS, S3 hosting and AI processing average
     }
     return { oneTime, monthly };
   };
@@ -112,14 +114,14 @@ const FarmPlanBuilder = () => {
             <h4 className="text-lg font-black text-slate-800">How would you like to receive your Farm Recommendations and Alerts?</h4>
             <div className="grid grid-cols-1 gap-4">
               <button
-                onClick={() => { setAnswers({...answers, smsUpdate: true}); setStep(5); }}
+                onClick={() => { setAnswers({...answers, smsUpdate: true}); setStep(3); }}
                 className="p-6 bg-slate-50 border-2 border-transparent hover:border-indigo-400 rounded-2xl text-left transition-all"
               >
                 <span className="font-bold text-sm block mb-1">Automated SMS updates directly on my phone</span>
-                <span className="inline-block px-2 py-1 bg-indigo-100 text-indigo-700 text-[10px] font-black uppercase rounded mt-2">+₹500 / month (Online Service Cost)</span>
+                <span className="inline-block px-2 py-1 bg-indigo-100 text-indigo-700 text-[10px] font-black uppercase rounded mt-2">+₹225 / month (SIM & SMS Service)</span>
               </button>
               <button
-                onClick={() => { setAnswers({...answers, smsUpdate: false}); setStep(5); }}
+                onClick={() => { setAnswers({...answers, smsUpdate: false}); setStep(3); }}
                 className="p-6 bg-slate-50 border-2 border-transparent hover:border-indigo-400 rounded-2xl text-left transition-all"
               >
                 <span className="font-bold text-sm block mb-1">Visit the Gram Panchayat office to view updates</span>
@@ -140,7 +142,7 @@ const FarmPlanBuilder = () => {
             <h4 className="text-lg font-black text-slate-800">Does your Region face frequent Power Cuts or Unstable Electricity?</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <button
-                onClick={() => { setAnswers({...answers, powerCuts: 'Yes'}); setStep(4); }}
+                onClick={() => { setAnswers({...answers, powerCuts: 'Yes'}); setStep(answers.hasSmartphone === 'Yes' ? 4 : 5); }}
                 className="p-6 bg-slate-50 border-2 border-transparent hover:border-indigo-400 rounded-2xl text-left transition-all flex flex-col items-start"
               >
                 <div className="flex items-center gap-3 mb-2">
@@ -150,10 +152,10 @@ const FarmPlanBuilder = () => {
                 <p className="text-[11px] text-slate-500 leading-relaxed mb-3 mt-1">
                   Include solar panels with the kit.
                 </p>
-                <span className="inline-block px-2 py-1 bg-indigo-100 text-indigo-700 text-[10px] font-black uppercase rounded mt-auto">+₹8,000 for Solar Kit</span>
+                <span className="inline-block px-2 py-1 bg-indigo-100 text-indigo-700 text-[10px] font-black uppercase rounded mt-auto">+₹1,36,466 for Full Solar/Battery Kit</span>
               </button>
               <button
-                onClick={() => { setAnswers({...answers, powerCuts: 'No'}); setStep(4); }}
+                onClick={() => { setAnswers({...answers, powerCuts: 'No'}); setStep(answers.hasSmartphone === 'Yes' ? 4 : 5); }}
                 className="p-6 bg-slate-50 border-2 border-transparent hover:border-indigo-400 rounded-2xl text-left transition-all flex flex-col items-start"
               >
                 <span className="font-bold text-sm uppercase block mb-1">No, power is stable</span>
@@ -190,7 +192,7 @@ const FarmPlanBuilder = () => {
                     (1. Disease Analysis, 2. Crop Recommendation, 3. Yield Prediction, 4. Weather Reports, 5. Voice Assistant)
                   </span>
                 </p>
-                <span className="inline-block px-2 py-1 bg-indigo-100 text-indigo-700 text-[10px] font-black uppercase rounded mt-auto">+₹3,000 / yr (Annual Cloud Sub)</span>
+                <span className="inline-block px-2 py-1 bg-indigo-100 text-indigo-700 text-[10px] font-black uppercase rounded mt-auto">+₹1,112 / month (Standard Tier Cloud)</span>
               </button>
               <button
                 onClick={() => { setAnswers({...answers, cloudFeatures: 'No'}); setStep(5); }}
@@ -231,34 +233,32 @@ const FarmPlanBuilder = () => {
               <div className="space-y-3">
                 <div className="flex justify-between border-b border-slate-200 pb-3 items-center">
                   <div>
-                    <span className="text-sm font-bold text-slate-600 block">Base Setup & Field Setup</span>
+                    <span className="text-sm font-bold text-slate-600 block">Base Setup & Field Equipment</span>
                     <span className="text-[10px] font-bold text-slate-400">(Fixed one-time cost, but may need occasional maintenance)</span>
                   </div>
-                  <span className="text-sm font-black">₹{baseSetupCost.toLocaleString()}</span>
-                </div>
-                <div className="flex justify-between border-b border-slate-200 pb-3 items-center">
-                  <span className="text-sm font-bold text-slate-600">Field Sensors</span>
-                  <span className="text-sm font-black">₹{sensorsCost.toLocaleString()}</span>
+                  <span className="text-sm font-black">
+                    ₹{baseSetupCost.toLocaleString()}
+                  </span>
                 </div>
                 {answers.hasSmartphone === 'No' && answers.smsUpdate && (
                   <div className="flex justify-between border-b border-slate-200 pb-3 items-center">
-                    <span className="text-sm font-bold text-slate-600">SMS Alert Service (Online Service)</span>
-                    <span className="text-sm font-black">₹500 / mo</span>
+                    <span className="text-sm font-bold text-slate-600">SMS Alert Service</span>
+                    <span className="text-sm font-black">₹225 / mo</span>
                   </div>
                 )}
-                {answers.hasSmartphone === 'Yes' && answers.powerCuts === 'Yes' && (
+                {answers.powerCuts === 'Yes' && (
                   <div className="flex justify-between border-b border-slate-200 pb-3 items-center">
-                    <span className="text-sm font-bold text-slate-600">Solar Micro-Grid Power Kit</span>
-                    <span className="text-sm font-black">₹8,000</span>
+                    <span className="text-sm font-bold text-slate-600">Solar Power Grid (Professional)</span>
+                    <span className="text-sm font-black">₹1,36,466</span>
                   </div>
                 )}
                 {answers.hasSmartphone === 'Yes' && answers.cloudFeatures === 'Yes' && (
                   <div className="flex justify-between border-b border-slate-200 pb-3 items-center">
                     <div className="flex flex-col">
-                      <span className="text-sm font-bold text-slate-600">Cloud Services Subscription</span>
-                      <span className="text-[10px] font-bold text-slate-400">(Annual/usage-based premium package)</span>
+                      <span className="text-sm font-bold text-slate-600">Cloud & AI Service Subscription</span>
+                      <span className="text-[10px] font-bold text-slate-400">(Hosting, Processing & AI features)</span>
                     </div>
-                    <span className="text-sm font-black">₹3,000 / yr</span>
+                    <span className="text-sm font-black">₹1,112 / mo</span>
                   </div>
                 )}
                 <div className="flex justify-between pt-2">

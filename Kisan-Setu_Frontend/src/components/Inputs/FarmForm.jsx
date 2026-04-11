@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Database, Sprout, MapPin, Calendar, CheckCircle2, Loader2, Sparkles, Droplets, FlaskConical, RefreshCw, Zap } from 'lucide-react';
+import { Database, Sprout, MapPin, Calendar, CheckCircle2, Loader2, Sparkles, Droplets, FlaskConical, RefreshCw, Zap, AlertTriangle } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 
 const stageInfo = {
   'stage_sowing': 'Seeds are planted and begin to sprout.',
@@ -18,8 +19,10 @@ const soilImages = {
 };
 
 const FarmForm = () => {
-  const { t, getRecommendation, recommendation, setRecommendation, randomizeSensors, saveRecord } = useApp();
+  const { t, getRecommendation, recommendation, setRecommendation, randomizeSensors, saveRecord, sensorData, setSensorData } = useApp();
+  const { dataMode, apiJson, session } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [profileId, setProfileId] = useState(session?.user?.username || '');
   const [formData, setFormData] = useState({
     cropType: '',
     growthStage: '',
@@ -30,6 +33,36 @@ const FarmForm = () => {
     randomizeSensors();
   };
 
+  const handleLoadProfile = async (idOverride = null, silent = false) => {
+    const id = idOverride || profileId;
+    if (!id) {
+       if (!silent) alert('Enter Farmer ID');
+       return;
+    }
+    try {
+      const res = await apiJson(`/api/farmer/profile?id=${id}`);
+      const data = await res.json();
+      if (res.ok && data.profile) {
+        const p = data.profile;
+        setSensorData({
+          n: p.sensors.n,
+          p: p.sensors.p,
+          k: p.sensors.k,
+          ph: p.sensors.ph,
+          moisture: p.sensors.moisture,
+          temp: p.sensors.temp,
+          humidity: p.sensors.humidity,
+          rainfall: p.sensors.rainfall,
+        });
+        if (!idOverride && !silent) alert('Profile loaded successfully');
+      } else {
+        alert(data.error || 'Profile not found');
+      }
+    } catch (e) {
+      alert('Error connecting to backend');
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.cropType || !formData.growthStage || !formData.soilType) {
@@ -38,8 +71,8 @@ const FarmForm = () => {
     }
     setLoading(true);
     setRecommendation(null);
-    // Randomize sensors before each prediction to simulate fresh IoT scan
-    randomizeSensors();
+    if (dataMode === 'simulation') randomizeSensors();
+    
     setTimeout(async () => {
       const result = await getRecommendation(formData);
       setLoading(false);
@@ -50,28 +83,60 @@ const FarmForm = () => {
   const stages = ['stage_sowing', 'stage_vegetative', 'stage_flowering', 'stage_harvest'];
   const soils = ['soil_clay', 'soil_sandy', 'soil_loamy', 'soil_silt'];
 
+  const isLive = dataMode === 'live';
+
+  React.useEffect(() => {
+    if (isLive && session?.user?.role === 'farmer') {
+      handleLoadProfile(null, true);
+    }
+  }, [isLive, session]);
+
   return (
     <div className="max-w-7xl mx-auto space-y-12 animate-in fade-in slide-in-from-bottom-5 duration-700">
       <div className="text-center max-w-2xl mx-auto">
         <div className="inline-flex items-center gap-2 px-4 py-2 bg-kisan-green-50 dark:bg-kisan-green-950/20 text-kisan-green-600 dark:text-kisan-green-400 rounded-full text-[10px] font-black tracking-[0.2em] uppercase mb-6 shadow-sm border border-kisan-green-100 dark:border-kisan-green-900/10">
-          <RefreshCw className="w-4 h-4" />
-          IoT Field Simulation
+          <Zap className={`w-4 h-4 ${isLive ? 'animate-pulse text-blue-500' : 'text-kisan-green-600'}`} />
+          {isLive ? 'LIVE DATA STREAM' : 'IoT Field Simulation'}
         </div>
         <h2 className="text-5xl font-black font-outfit tracking-tighter text-slate-800 dark:text-white uppercase mb-4 leading-none">
-          Environmental <span className="text-kisan-green-600">Protocol</span>
+          High-Precision Synthesis <span className="text-kisan-green-600">Protocol</span>
         </h2>
         <p className="text-slate-400 dark:text-slate-500 font-bold text-xs tracking-widest uppercase mb-12">
-          Executing high-precision resource allocation mapping based on real-time field sensor telemetry.
+          Executing high-precision nutrient synthesis mapping based on real-time field telemetry.
         </p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
-        <motion.div 
-          layout
-          className="lg:col-span-5 space-y-8"
-        >
+        <motion.div layout className="lg:col-span-5 space-y-8">
           <form onSubmit={handleSubmit} className="bg-white dark:bg-slate-900 p-10 rounded-[3rem] shadow-sm border border-slate-100 dark:border-slate-800 relative z-10 overflow-hidden">
             <div className="space-y-10">
+              
+              {/* Farmer ID Section */}
+              <div className="p-6 bg-slate-50 dark:bg-slate-800/50 rounded-3xl border border-slate-100 dark:border-slate-800">
+                <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 tracking-widest uppercase pl-2 flex items-center gap-2 mb-4">
+                  <Database className="w-3 h-3" />
+                  Farmer Access
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={session?.user?.role === 'farmer' ? (session.user.display_name || session.user.username) : profileId}
+                    onChange={(e) => setProfileId(e.target.value)}
+                    placeholder="Enter Farmer ID"
+                    readOnly={session?.user?.role === 'farmer'}
+                    className="flex-1 px-4 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-sm font-bold disabled:opacity-75"
+                  />
+                  <button 
+                    type="button" 
+                    onClick={() => handleLoadProfile()} 
+                    disabled={session?.user?.role === 'farmer'}
+                    className="px-4 py-2 bg-kisan-green-600 text-white rounded-xl text-xs font-black uppercase disabled:opacity-50"
+                  >
+                    Load
+                  </button>
+                </div>
+              </div>
+
               <div className="space-y-4">
                 <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 tracking-widest uppercase pl-2 flex items-center gap-2">
                   <Sprout className="w-3 h-3" />
@@ -79,19 +144,26 @@ const FarmForm = () => {
                 </label>
                 <div className="grid grid-cols-1 gap-2">
                   {crops.map((crop) => (
-                    <button
+                    <motion.button
                       key={crop}
                       type="button"
+                      whileHover={{ scale: 1.05, y: -4, shadow: '0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04)' }}
+                      whileTap={{ scale: 0.95 }}
                       onClick={() => setFormData({...formData, cropType: crop})}
-                      className={`px-6 py-4 rounded-2xl text-sm font-bold transition-all border-2 text-left flex items-center justify-between group ${
+                      className={`relative overflow-hidden px-8 py-5 rounded-[2.5rem] text-sm font-black transition-all border-4 text-left flex items-center justify-between group ${
                         formData.cropType === crop 
-                        ? 'bg-kisan-green-500 text-white border-kisan-green-500 shadow-lg shadow-kisan-green-200' 
-                        : 'bg-slate-50 dark:bg-slate-800/50 border-transparent text-slate-500 hover:border-slate-200'
+                        ? 'bg-kisan-green-600 text-white border-kisan-green-600 shadow-2xl shadow-kisan-green-100' 
+                        : 'bg-white dark:bg-slate-900 border-slate-50 dark:border-slate-800 text-slate-500 hover:border-kisan-green-300'
                       }`}
                     >
-                      {t(crop)}
-                      {formData.cropType === crop && <CheckCircle2 className="w-4 h-4 text-white" />}
-                    </button>
+                      <div className="flex items-center gap-4 relative z-10">
+                         <div className={`p-3 rounded-2xl ${formData.cropType === crop ? 'bg-white/20' : 'bg-slate-100 dark:bg-slate-800 group-hover:bg-kisan-green-50'}`}>
+                           <Sprout className="w-5 h-5" />
+                         </div>
+                         {t(crop)}
+                      </div>
+                      {formData.cropType === crop && <CheckCircle2 className="w-6 h-6 text-white relative z-10" />}
+                    </motion.button>
                   ))}
                 </div>
               </div>
@@ -103,35 +175,24 @@ const FarmForm = () => {
                 </label>
                 <div className="grid grid-cols-2 gap-2">
                   {stages.map((stage) => (
-                    <motion.div 
-                      key={stage} 
-                      className="relative"
-                      whileHover="hover"
-                      initial="initial"
-                    >
+                    <motion.div key={stage} className="relative" whileHover={{ y: -10, scale: 1.02 }}>
                       <button
                         type="button"
                         onClick={() => setFormData({...formData, growthStage: stage})}
-                        className={`w-full px-6 py-4 rounded-2xl text-[11px] font-bold tracking-widest transition-all border-2 flex items-center justify-between group ${
+                        className={`w-full p-8 h-full rounded-[3.5rem] text-[10px] font-black tracking-widest uppercase transition-all border-4 flex flex-col items-center gap-6 text-center group ${
                           formData.growthStage === stage 
-                          ? 'bg-kisan-green-500 text-white border-kisan-green-500 shadow-md' 
-                          : 'bg-slate-50 dark:bg-slate-800/50 border-transparent text-slate-500 hover:border-slate-200'
+                          ? 'bg-emerald-600 text-white border-emerald-600 shadow-2xl' 
+                          : 'bg-white dark:bg-slate-900 border-slate-50 dark:border-slate-800 text-slate-400 hover:border-emerald-300'
                         }`}
                       >
+                        <div className={`p-6 rounded-[2.5rem] ${formData.growthStage === stage ? 'bg-white/20' : 'bg-slate-100 dark:bg-slate-800 group-hover:bg-emerald-50'} shadow-sm`}>
+                           <Database className="w-8 h-8" />
+                        </div>
                         {t(stage)}
-                        {formData.growthStage === stage && <CheckCircle2 className="w-4 h-4 text-white" />}
+                        <p className="text-[9px] font-bold opacity-60 normal-case hidden group-hover:block transition-all mt-4 leading-relaxed px-4">
+                          {stageInfo[stage]}
+                        </p>
                       </button>
-                      <motion.div
-                        variants={{
-                          initial: { opacity: 0, y: 10, scale: 0.95, pointerEvents: "none" },
-                          hover: { opacity: 1, y: 0, scale: 1, pointerEvents: "none", transition: { type: "spring", stiffness: 400, damping: 25 } }
-                        }}
-                        className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 w-48 p-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-2xl shadow-xl z-50 flex flex-col items-center"
-                      >
-                        <p className="text-[11px] font-bold text-center w-full leading-relaxed">{stageInfo[stage]}</p>
-                        <div className="absolute top-full left-1/2 -translate-x-1/2 border-[6px] border-transparent border-t-slate-200 dark:border-t-slate-700"></div>
-                        <div className="absolute top-[calc(100%-2px)] left-1/2 -translate-x-1/2 border-[6px] border-transparent border-t-white dark:border-t-slate-800"></div>
-                      </motion.div>
                     </motion.div>
                   ))}
                 </div>
@@ -144,38 +205,31 @@ const FarmForm = () => {
                 </label>
                 <div className="flex flex-wrap gap-2">
                   {soils.map((soil) => (
-                    <motion.div 
-                      key={soil} 
-                      className="relative"
-                      whileHover="hover"
-                      initial="initial"
+                    <motion.button
+                      key={soil}
+                      type="button"
+                      whileHover={{ scale: 1.1, y: -5, rotate: 2 }}
+                      whileTap={{ scale: 0.9 }}
+                      onClick={() => setFormData({...formData, soilType: soil})}
+                      className={`relative w-28 h-28 rounded-[2.5rem] overflow-hidden border-[6px] transition-all group ${
+                        formData.soilType === soil 
+                        ? 'border-kisan-green-600 shadow-[0_20px_50px_rgba(22,163,74,0.3)] scale-110 z-10' 
+                        : 'border-white dark:border-slate-900 shadow-md opacity-70 hover:opacity-100'
+                      }`}
                     >
-                      <button
-                        type="button"
-                        onClick={() => setFormData({...formData, soilType: soil})}
-                        className={`px-5 py-3 rounded-xl text-[10px] font-black tracking-widest uppercase transition-all border-2 ${
-                          formData.soilType === soil 
-                          ? 'bg-kisan-green-500 text-white border-kisan-green-500 shadow-md' 
-                          : 'bg-slate-50 dark:bg-slate-800/50 border-transparent text-slate-400 hover:bg-white hover:border-slate-200 dark:hover:bg-slate-800'
-                        }`}
-                      >
-                        {t(soil)}
-                      </button>
-                      <motion.div
-                        variants={{
-                          initial: { opacity: 0, y: 10, scale: 0.95, pointerEvents: "none" },
-                          hover: { opacity: 1, y: 0, scale: 1, pointerEvents: "none", transition: { type: "spring", stiffness: 400, damping: 25 } }
-                        }}
-                        className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 w-36 p-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-xl z-50 flex flex-col items-center"
-                      >
-                        <img src={soilImages[soil]} alt={soil} className="w-full aspect-square object-cover rounded-xl border border-slate-100 dark:border-slate-700" />
-                        <div className="absolute top-full left-1/2 -translate-x-1/2 border-[6px] border-transparent border-t-slate-200 dark:border-t-slate-700"></div>
-                        <div className="absolute top-[calc(100%-2px)] left-1/2 -translate-x-1/2 border-[6px] border-transparent border-t-white dark:border-t-slate-800"></div>
-                      </motion.div>
-                    </motion.div>
+                       <img 
+                         src={soilImages[soil]} 
+                         alt={soil} 
+                         className="absolute inset-0 w-full h-full object-cover group-hover:scale-150 transition-transform duration-1000 ease-out"
+                        />
+                       <div className={`absolute inset-0 bg-gradient-to-t from-black/80 to-transparent flex items-end justify-center p-4 transition-opacity ${formData.soilType === soil ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
+                          <span className="text-[10px] font-black text-white uppercase tracking-widest">{t(soil)}</span>
+                       </div>
+                    </motion.button>
                   ))}
                 </div>
               </div>
+
 
               <div className="flex gap-4">
                 <button
@@ -189,24 +243,24 @@ const FarmForm = () => {
                       CALCULATING...
                     </>
                   ) : (
-                    <>
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-full bg-slate-50 dark:bg-slate-700 flex items-center justify-center shadow-sm border border-slate-100 dark:border-slate-600">
                         <Sparkles className="w-4 h-4 text-kisan-green-600" />
                       </div>
                       <span className="leading-none">GENERATE SYNTHESIS</span>
                     </div>
-                    </>
                   )}
                 </button>
-                <button
-                  type="button"
-                  onClick={handleRandomize}
-                  className="px-8 py-5 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 rounded-[2rem] border-2 border-slate-50 dark:border-slate-800 font-bold text-[10px] uppercase tracking-widest hover:border-kisan-green-400 transition-all flex items-center gap-3 shadow-sm"
-                >
-                  <RefreshCw className="w-4 h-4" />
-                  Random Scan
-                </button>
+                {!isLive && (
+                  <button
+                    type="button"
+                    onClick={handleRandomize}
+                    className="px-8 py-5 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-400 rounded-[2rem] border-2 border-slate-50 dark:border-slate-800 font-bold text-[10px] uppercase tracking-widest hover:border-kisan-green-400 transition-all flex items-center gap-3 shadow-sm"
+                  >
+                    <RefreshCw className="w-4 h-4" />
+                    Random Scan
+                  </button>
+                )}
               </div>
             </div>
           </form>
@@ -232,171 +286,93 @@ const FarmForm = () => {
             )}
 
             {recommendation && (
-              <motion.div
-                initial={{ opacity: 0, y: 30, scale: 0.95 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                className="space-y-8"
-              >
-                <div className="bg-gradient-to-br from-white to-slate-50 dark:from-slate-900 dark:to-slate-800 p-12 rounded-[4rem] shadow-2xl border border-white dark:border-slate-700/50 relative overflow-hidden group">
-                   <div className="absolute top-0 right-0 p-12 opacity-[0.05] group-hover:scale-110 transition-transform duration-1000">
-                     <CheckCircle2 className="w-48 h-48" />
-                   </div>
-
-                   <div className="mb-12">
-                     <h3 className="text-3xl font-black text-slate-800 dark:text-white uppercase tracking-tighter mb-2">Synthesis <span className="text-kisan-green-600">Complete</span></h3>
-                     <p className="text-slate-400 dark:text-slate-500 font-bold text-[10px] tracking-[0.25em] uppercase">High Resolution Recommendations generated</p>
-                   </div>
-
-                   <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                      <div className="p-8 bg-white dark:bg-slate-900 rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.08)] border border-white dark:border-slate-700/50">
-                         <div className="p-3 bg-kisan-green-50 dark:bg-kisan-green-500/10 text-kisan-green-600 w-fit rounded-2xl mb-6 shadow-inner">
-                            <FlaskConical className="w-6 h-6" />
-                         </div>
-                         <h4 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2">{t('fertilizer')}</h4>
-                         <p className="text-2xl font-black text-slate-800 dark:text-white leading-tight mb-1">{recommendation.fertilizer}</p>
-                         <div className="mt-2 text-[10px] font-bold text-kisan-green-600 dark:text-kisan-green-400 uppercase tracking-widest">
-                            Recommended: {recommendation.dosage}
-                         </div>
+              <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
+                {recommendation.error ? (
+                   <div className="bg-white dark:bg-slate-950 p-12 rounded-[4rem] border-4 border-dashed border-rose-100 dark:border-rose-900/30 flex flex-col items-center text-center space-y-8 relative overflow-hidden">
+                      <div className="absolute top-0 right-0 w-64 h-64 bg-rose-500/5 rounded-full blur-3xl -mr-32 -mt-32"></div>
+                      <div className="p-8 bg-rose-50 dark:bg-rose-500/10 text-rose-600 rounded-full shadow-inner animate-pulse">
+                         <AlertTriangle className="w-16 h-16" />
                       </div>
-
-                      <div className="p-8 bg-white dark:bg-slate-900 rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.08)] border border-white dark:border-slate-700/50">
-                         <div className="p-3 bg-blue-50 dark:bg-blue-500/10 text-blue-600 w-fit rounded-2xl mb-6 shadow-inner">
-                            <Droplets className="w-6 h-6" />
-                         </div>
-                         <h4 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2">{t('irrigation')}</h4>
-                         <p className="text-2xl font-black text-slate-800 dark:text-white leading-tight">Apply Irrigation</p>
-                         <p className="mt-2 text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest">Growth Phase Optimization</p>
+                      <div className="space-y-4 relative z-10">
+                        <h3 className="text-3xl font-black text-slate-800 dark:text-white uppercase tracking-tighter">
+                          Synthesis <span className="text-rose-600">Failed</span>
+                        </h3>
+                        <p className="text-slate-400 font-bold text-xs uppercase tracking-widest max-w-sm mx-auto">
+                          {recommendation.message}
+                        </p>
+                      </div>
+                      <div className="w-full p-6 bg-slate-50 dark:bg-slate-900/50 rounded-3xl border border-slate-100 dark:border-slate-800 text-left">
+                         <p className="text-[10px] font-black text-rose-500 uppercase tracking-widest mb-2">Technical Advisory:</p>
+                         <p className="text-xs font-bold text-slate-500 italic leading-relaxed">
+                            {recommendation.advisory}
+                         </p>
                       </div>
                    </div>
+                ) : (
+                  <div className="bg-gradient-to-br from-white to-slate-50 dark:from-slate-900 dark:to-slate-800 p-12 rounded-[4rem] shadow-2xl border border-white dark:border-slate-700/50 relative overflow-hidden group">
+                     <div className="absolute top-0 right-0 p-12 opacity-[0.05] group-hover:scale-110 transition-transform duration-1000">
+                       <CheckCircle2 className="w-48 h-48" />
+                     </div>
 
-                    <div className="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                       <div className="p-5 rounded-2xl shadow-md transition-all border-2" 
-                            style={{ 
-                              backgroundColor: recommendation.phValue < 5 ? '#EF4444' : recommendation.phValue < 6 ? '#FFCE20' : recommendation.phValue < 7.2 ? '#10B981' : recommendation.phValue < 8 ? '#059669' : '#0EA5E9',
-                              borderColor: 'rgba(0,0,0,0.1)'
-                            }}>
-                          <p className="text-[8px] font-black text-slate-900/40 uppercase tracking-widest mb-2">Soil pH</p>
-                          <p className="text-sm font-black text-slate-900">{recommendation.phStatus}</p>
-                       </div>
-                       
-                       <div className="p-5 rounded-2xl shadow-md transition-all" style={{ backgroundColor: recommendation.nStatus === 'LOW' ? '#FFCE20' : recommendation.nStatus === 'HIGH' ? '#EF4444' : '#10B981' }}>
-                          <p className="text-[8px] font-black text-slate-900/40 uppercase tracking-widest mb-2">Nitrogen Status</p>
-                          <p className="text-sm font-black text-slate-900">{recommendation.nStatus}</p>
-                       </div>
-                       
-                       <div className="p-5 rounded-2xl shadow-md transition-all" style={{ backgroundColor: recommendation.pStatus === 'LOW' ? '#FFCE20' : recommendation.pStatus === 'HIGH' ? '#EF4444' : '#10B981' }}>
-                          <p className="text-[8px] font-black text-slate-900/40 uppercase tracking-widest mb-2">Phosphorus Status</p>
-                          <p className="text-sm font-black text-slate-900">{recommendation.pStatus}</p>
-                       </div>
-                       
-                       <div className="p-5 rounded-2xl shadow-md transition-all" style={{ backgroundColor: recommendation.kStatus === 'LOW' ? '#FFCE20' : recommendation.kStatus === 'HIGH' ? '#EF4444' : '#10B981' }}>
-                          <p className="text-[8px] font-black text-slate-900/40 uppercase tracking-widest mb-2">Potassium Status</p>
-                          <p className="text-sm font-black text-slate-900">{recommendation.kStatus}</p>
-                       </div>
-                    </div>
+                     <div className="mb-12">
+                       <h3 className="text-3xl font-black text-slate-800 dark:text-white uppercase tracking-tighter mb-2">Synthesis <span className="text-kisan-green-600">Complete</span></h3>
+                       <p className="text-slate-400 dark:text-slate-500 font-bold text-[10px] tracking-[0.25em] uppercase">High Resolution Recommendations generated</p>
+                     </div>
 
-                    <div className="mt-8 p-6 bg-slate-50 dark:bg-slate-900/50 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-inner">
-                      <p className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mb-2 font-inter">ADVISORY PROTOCOL:</p>
-                      <p className="text-xs font-bold text-slate-700 dark:text-slate-300 italic leading-relaxed">" {recommendation.advisory} "</p>
-                    </div>
-                 </div>
-                 
-                 <div className="flex gap-4 p-4 print:hidden">
-                   <button 
-                     onClick={() => saveRecord('json')}
-                     className="flex-1 py-5 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold text-[10px] uppercase tracking-widest rounded-3xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 transition-all shadow-sm"
-                   >
-                     Save Record (JSON)
-                   </button>
-                   <button 
-                     onClick={() => saveRecord('text')}
-                     className="flex-1 py-5 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold text-[10px] uppercase tracking-widest rounded-3xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 transition-all shadow-sm"
-                   >
-                     Export Report (Text File)
-                   </button>
-                 </div>
+                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div className="p-8 bg-white dark:bg-slate-900 rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.08)] border border-white dark:border-slate-700/50">
+                           <div className="p-3 bg-kisan-green-50 dark:bg-kisan-green-500/10 text-kisan-green-600 w-fit rounded-2xl mb-6 shadow-inner">
+                              <FlaskConical className="w-6 h-6" />
+                           </div>
+                           <h4 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2">{t('fertilizer')}</h4>
+                           <p className="text-2xl font-black text-slate-800 dark:text-white leading-tight mb-1">{recommendation.fertilizer}</p>
+                           <div className="mt-2 text-[10px] font-bold text-kisan-green-600 dark:text-kisan-green-400 uppercase tracking-widest">
+                              Recommended: {recommendation.dosage}
+                           </div>
+                        </div>
 
-                 {/* HIDDEN PRINT REPORT */}
-                 <div className="hidden print:block p-10 bg-white min-h-screen text-slate-900">
-                    <div className="border-b-4 border-kisan-green-600 pb-4 mb-8 flex justify-between items-end">
-                       <div>
-                         <h1 className="text-4xl font-black uppercase tracking-tighter">Kisan-Setu Report</h1>
-                         <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1">Field Intelligence Synthesis</p>
-                       </div>
-                       <p className="text-[10px] font-mono text-slate-300">{new Date().toLocaleString()}</p>
-                    </div>
+                        <div className="p-8 bg-white dark:bg-slate-900 rounded-[2.5rem] shadow-[0_20px_50px_rgba(0,0,0,0.08)] border border-white dark:border-slate-700/50">
+                           <div className="p-3 bg-blue-50 dark:bg-blue-500/10 text-blue-600 w-fit rounded-2xl mb-6 shadow-inner">
+                              <Droplets className="w-6 h-6" />
+                           </div>
+                           <h4 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2">{t('irrigation')}</h4>
+                           <p className="text-2xl font-black text-slate-800 dark:text-white leading-tight">Apply Irrigation</p>
+                           <p className="mt-2 text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest">Growth Phase Optimization</p>
+                        </div>
+                     </div>
 
-                    <div className="grid grid-cols-2 gap-10 mb-10">
-                       <section>
-                          <h2 className="text-[10px] font-black uppercase text-kisan-green-600 tracking-widest mb-4 border-b pb-2">01 Field Identification</h2>
-                          <div className="space-y-3">
-                             <div className="flex justify-between border-b border-slate-50 py-1">
-                                <span className="text-[10px] font-bold text-slate-400 uppercase">Crop Selected:</span>
-                                <span className="text-xs font-black uppercase">{t(recommendation.farmInfo.cropType)}</span>
-                             </div>
-                             <div className="flex justify-between border-b border-slate-50 py-1">
-                                <span className="text-[10px] font-bold text-slate-400 uppercase">Growth Stage:</span>
-                                <span className="text-xs font-black uppercase">{t(recommendation.farmInfo.growthStage)}</span>
-                             </div>
-                             <div className="flex justify-between border-b border-slate-50 py-1">
-                                <span className="text-[10px] font-bold text-slate-400 uppercase">Soil Type:</span>
-                                <span className="text-xs font-black uppercase">{t(recommendation.farmInfo.soilType)}</span>
-                             </div>
-                             <div className="flex justify-between border-b border-slate-50 py-1">
-                                <span className="text-[10px] font-bold text-slate-400 uppercase">Irrigation Access:</span>
-                                <span className="text-xs font-black uppercase">Standard Ground Access</span>
-                             </div>
+                      <div className="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                          <div className="p-5 rounded-2xl shadow-md border-2" style={{ backgroundColor: recommendation.phStatus.includes('NORMAL') ? '#D1FAE5' : '#FEE2E2', border: 'none' }}>
+                             <p className="text-[8px] font-black text-slate-900/40 uppercase tracking-widest mb-2">Soil pH</p>
+                             <p className="text-sm font-black" style={{ color: recommendation.phStatus.includes('NORMAL') ? '#065f46' : '#991b1b' }}>{recommendation.phStatus}</p>
                           </div>
-                       </section>
-
-                       <section>
-                          <h2 className="text-[10px] font-black uppercase text-kisan-green-600 tracking-widest mb-4 border-b pb-2">02 Field Telemetry</h2>
-                          <div className="space-y-2">
-                             <div className="grid grid-cols-2 gap-4">
-                                <div className="p-2 bg-slate-50 border border-slate-100 rounded" style={{ backgroundColor: recommendation.nStatus === 'LOW' ? '#FEF3C7' : recommendation.nStatus === 'HIGH' ? '#FEE2E2' : '#D1FAE5' }}>
-                                   <p className="text-[8px] font-black text-slate-400 uppercase">Nitrogen</p>
-                                   <p className="text-xs font-black text-slate-900">{recommendation.sensorDetails.n} mg/kg - {recommendation.nStatus}</p>
-                                </div>
-                                <div className="p-2 bg-slate-50 border border-slate-100 rounded" style={{ backgroundColor: recommendation.pStatus === 'LOW' ? '#FEF3C7' : recommendation.pStatus === 'HIGH' ? '#FEE2E2' : '#D1FAE5' }}>
-                                   <p className="text-[8px] font-black text-slate-400 uppercase">Phosphorus</p>
-                                   <p className="text-xs font-black text-slate-900">{recommendation.sensorDetails.p} mg/kg - {recommendation.pStatus}</p>
-                                </div>
-                                <div className="p-2 bg-slate-50 border border-slate-100 rounded" style={{ backgroundColor: recommendation.kStatus === 'LOW' ? '#FEF3C7' : recommendation.kStatus === 'HIGH' ? '#FEE2E2' : '#D1FAE5' }}>
-                                   <p className="text-[8px] font-black text-slate-400 uppercase">Potassium</p>
-                                   <p className="text-xs font-black text-slate-900">{recommendation.sensorDetails.k} mg/kg - {recommendation.kStatus}</p>
-                                </div>
-                                <div className="p-2 bg-slate-50 border border-slate-200 rounded">
-                                   <p className="text-[8px] font-black text-slate-400 uppercase">pH Level</p>
-                                   <p className="text-xs font-black text-slate-900">{recommendation.sensorDetails.ph} - {recommendation.phStatus}</p>
-                                </div>
-                             </div>
+                          <div className="p-5 rounded-2xl shadow-md transition-all" style={{ backgroundColor: recommendation.nStatus === 'MEDIUM' ? '#D1FAE5' : recommendation.nStatus === 'HIGH' ? '#FEF3C7' : '#FEE2E2' }}>
+                             <p className="text-[8px] font-black text-slate-900/40 uppercase tracking-widest mb-2">Nitrogen Status</p>
+                             <p className="text-sm font-black" style={{ color: recommendation.nStatus === 'MEDIUM' ? '#065f46' : recommendation.nStatus === 'HIGH' ? '#92400e' : '#991b1b' }}>{recommendation.nStatus}</p>
                           </div>
-                       </section>
-                    </div>
-
-                    <div className="bg-slate-900 text-white p-8 rounded-3xl mb-10">
-                       <h2 className="text-[10px] font-black uppercase text-kisan-green-400 tracking-widest mb-4">03 Synthesis Recommendation</h2>
-                       <div className="flex justify-between items-center bg-white/5 p-6 rounded-2xl border border-white/10">
-                          <div>
-                             <p className="text-[8px] font-black text-white/50 uppercase tracking-widest">Target Fertilizer</p>
-                             <p className="text-3xl font-black uppercase">{recommendation.fertilizer}</p>
+                          <div className="p-5 rounded-2xl shadow-md transition-all" style={{ backgroundColor: recommendation.pStatus === 'MEDIUM' ? '#D1FAE5' : recommendation.pStatus === 'HIGH' ? '#FEF3C7' : '#FEE2E2' }}>
+                             <p className="text-[8px] font-black text-slate-900/40 uppercase tracking-widest mb-2">Phosphorus Status</p>
+                             <p className="text-sm font-black" style={{ color: recommendation.pStatus === 'MEDIUM' ? '#065f46' : recommendation.pStatus === 'HIGH' ? '#92400e' : '#991b1b' }}>{recommendation.pStatus}</p>
                           </div>
-                          <div className="text-right">
-                             <p className="text-[8px] font-black text-white/50 uppercase tracking-widest">Recommended Dosage</p>
-                             <p className="text-xl font-black text-kisan-green-400 uppercase">{recommendation.dosage}</p>
+                          <div className="p-5 rounded-2xl shadow-md transition-all" style={{ backgroundColor: recommendation.kStatus === 'MEDIUM' ? '#D1FAE5' : recommendation.kStatus === 'HIGH' ? '#FEF3C7' : '#FEE2E2' }}>
+                             <p className="text-[8px] font-black text-slate-900/40 uppercase tracking-widest mb-2">Potassium Status</p>
+                             <p className="text-sm font-black" style={{ color: recommendation.kStatus === 'MEDIUM' ? '#065f46' : recommendation.kStatus === 'HIGH' ? '#92400e' : '#991b1b' }}>{recommendation.kStatus}</p>
                           </div>
-                       </div>
-                    </div>
+                      </div>
 
-                    <div className="p-6 bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200">
-                       <p className="text-[10px] font-black uppercase tracking-widest mb-2">Advisory Note:</p>
-                       <p className="text-xs font-bold leading-relaxed">" {recommendation.advisory} "</p>
-                    </div>
-
-                    <div className="mt-12 text-center">
-                       <p className="text-[8px] font-black text-slate-300 uppercase tracking-widest">Generated by Kisan-Setu AI Field Synthesis Engine</p>
-                    </div>
-                 </div>
+                      <div className="mt-8 p-6 bg-slate-50 dark:bg-slate-900/50 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-inner">
+                        <p className="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mb-2 font-inter">ADVISORY PROTOCOL:</p>
+                        <p className="text-xs font-bold text-slate-700 dark:text-slate-300 italic leading-relaxed">" {recommendation.advisory} "</p>
+                      </div>
+                   </div>
+                )}
+                
+                {!recommendation.error && (
+                  <div className="flex gap-4 p-4 print:hidden">
+                    <button onClick={() => saveRecord('json')} className="flex-1 py-5 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold text-[10px] uppercase tracking-widest rounded-3xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 transition-all shadow-sm">Save Record (JSON)</button>
+                    <button onClick={() => saveRecord('text')} className="flex-1 py-5 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold text-[10px] uppercase tracking-widest rounded-3xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 transition-all shadow-sm">Export Report (Text File)</button>
+                  </div>
+                )}
               </motion.div>
             )}
           </AnimatePresence>

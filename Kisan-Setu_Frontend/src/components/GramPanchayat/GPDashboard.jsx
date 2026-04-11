@@ -1,10 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
+import { useAuth } from '../../context/AuthContext';
+import WarehousePanel from './WarehousePanel';
+import DataModeToggle from '../Layout/DataModeToggle';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Users, MapPin, Sprout, FlaskConical, Droplets, Thermometer, Wind, 
   CheckCircle2, Loader2, Sparkles, Download, ChevronRight,
-  Search, Database, RefreshCw, Plus
+  Search, Database, RefreshCw, Plus, Trash2
 } from 'lucide-react';
 
 // Generic farmer labels with unique sensor data from IoT field deployments
@@ -56,6 +59,8 @@ const randomBetween = (min, max, decimals = 1) => {
 
 const GPDashboard = ({ operator, onLogout }) => {
   const { t } = useApp();
+  const { dataMode, apiJson } = useAuth();
+  const isLive = dataMode === 'live';
   const [farmers, setFarmers] = useState(createFarmers);
   const [selectedFarmer, setSelectedFarmer] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -70,16 +75,87 @@ const GPDashboard = ({ operator, onLogout }) => {
     growthStage: '',
     soilType: ''
   });
+  const [saving, setSaving] = useState(false);
 
   const filteredFarmers = farmers.filter(f => 
     f.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
     f.sector.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const handleAddFarmer = () => {
+  useEffect(() => {
+    if (dataMode !== 'live') {
+      setFarmers(createFarmers());
+      return undefined;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await apiJson('/api/gp/registrations');
+        const j = await res.json();
+        if (cancelled || !res.ok) return;
+        const mapped = (j.farmers || []).map((f) => ({
+          id: f.id,
+          name: f.name,
+          sector: f.sector,
+          area: f.area,
+          sensors: { ...f.sensors },
+          db_id: f.db_id,
+        }));
+        setFarmers(mapped);
+      } catch {
+        if (!cancelled) setFarmers([]);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [dataMode, apiJson]);
+
+  const handleAddFarmer = async () => {
     if (!newFarmer.name || !newFarmer.sector || !newFarmer.area) {
       alert("Please fill all details including Area...");
       return;
+    }
+    setSaving(true);
+    try {
+      if (dataMode === 'live') {
+      const body = {
+        name: newFarmer.name.trim(),
+        sector: newFarmer.sector.trim(),
+        area: newFarmer.area.trim(),
+        n: 0,
+        p: 0,
+        k: 0,
+        ph: 0,
+        moisture: 0,
+        temp: 0,
+        humidity: 0,
+        rainfall: 0,
+        notes: 'Awaiting first IoT device sync — initial field profile.',
+      };
+      const res = await apiJson('/api/gp/registrations', { method: 'POST', body: JSON.stringify(body) });
+      const row = await res.json();
+      if (!res.ok) {
+        alert(row.error || 'Could not save farmer');
+        return;
+      }
+      setFarmers((prev) => [
+        {
+          id: row.id,
+          name: row.name,
+          sector: row.sector,
+          area: row.area,
+          sensors: { ...row.sensors },
+          db_id: row.db_id,
+        },
+        ...prev,
+      ]);
+      setNewFarmer({ name: '', sector: '', area: '' });
+      setShowAddFarmer(false);
+        return;
+      }
+    } finally {
+      setSaving(false);
     }
     const newId = `F${String(farmers.length + 1).padStart(3, '0')}`;
     const newF = {
@@ -109,8 +185,12 @@ const GPDashboard = ({ operator, onLogout }) => {
     setFarmerInput({ cropType: '', growthStage: '', soilType: '' });
   };
 
-  // Live Sync — refreshes the selected farmer's sensor values within realistic ranges
+  // Live Sync — simulation only: randomizes sensor values
   const handleLiveSync = () => {
+    if (dataMode === 'live') {
+      alert('Live mode uses stored field readings. Add or re-register a farmer to update values.');
+      return;
+    }
     if (!selectedFarmer) return;
     setSyncing(true);
     const newSensors = {
@@ -130,8 +210,11 @@ const GPDashboard = ({ operator, onLogout }) => {
     setTimeout(() => setSyncing(false), 600);
   };
 
-  // Random Scan — randomizes sensor values AND auto-fills random crop/stage/soil
   const handleRandomScan = () => {
+    if (dataMode === 'live') {
+      alert('Random scan is available in Simulation mode only.');
+      return;
+    }
     if (!selectedFarmer) return;
     const newSensors = {
       n: randomBetween(20, 159, 1),
@@ -151,6 +234,24 @@ const GPDashboard = ({ operator, onLogout }) => {
       soilType: soils[Math.floor(Math.random() * soils.length)]
     });
     setGpRecommendation(null);
+  };
+
+  const handleDeleteFarmer = async (e, farmer) => {
+    e.stopPropagation();
+    if (!window.confirm(`Permanently delete record for ${farmer.name}?`)) return;
+    
+    if (dataMode === 'live') {
+      try {
+        const res = await apiJson(`/api/gp/registrations/${farmer.db_id}`, { method: 'DELETE' });
+        if (!res.ok) throw new Error('Delete failed');
+      } catch (err) {
+        alert('Server error: Could not delete farmer');
+        return;
+      }
+    }
+    
+    setFarmers(prev => prev.filter(f => f.id !== farmer.id));
+    if (selectedFarmer?.id === farmer.id) setSelectedFarmer(null);
   };
 
   const handleGenerateForFarmer = async () => {
@@ -178,9 +279,8 @@ const GPDashboard = ({ operator, onLogout }) => {
       };
 
       const s = selectedFarmer.sensors;
-      const response = await fetch('http://127.0.0.1:5000/predict', {
+      const response = await apiJson('/predict', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           soil_type: soilMap[farmerInput.soilType],
           soil_ph: s.ph,
@@ -192,7 +292,12 @@ const GPDashboard = ({ operator, onLogout }) => {
           humidity: s.humidity,
           rainfall: s.rainfall,
           crop_type: cropMap[farmerInput.cropType],
-          growth_stage: stageMap[farmerInput.growthStage]
+          growth_stage: stageMap[farmerInput.growthStage],
+          panchayat_code: operator?.panchayat,
+          panchayat_name: operator?.panchayat,
+          sector_label: selectedFarmer?.sector,
+          farmer_external_id: selectedFarmer?.id,
+          farmer_name: selectedFarmer?.name,
         }),
       });
 
@@ -294,7 +399,8 @@ Generated by Kisan-Setu • Gram Panchayat Module
             <p className="text-[8px] font-bold text-kisan-green-600 uppercase tracking-[0.2em]">Gram Panchayat Portal</p>
           </div>
         </div>
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-6 flex-wrap justify-end">
+          <DataModeToggle />
           <div className="text-right">
             <p className="text-xs font-black text-slate-800 uppercase">{operator.name}</p>
             <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{operator.panchayat}</p>
@@ -320,7 +426,9 @@ Generated by Kisan-Setu • Gram Panchayat Module
                 </div>
                 <div>
                   <h3 className="text-lg font-black text-slate-800 uppercase tracking-tight">Farmer Records</h3>
-                  <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">{farmers.length} Registered Farms</p>
+                  <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
+                    {farmers.length} {dataMode === 'live' ? 'In database' : 'Demo farms'}
+                  </p>
                 </div>
               </div>
               <button
@@ -370,9 +478,15 @@ Generated by Kisan-Setu • Gram Panchayat Module
                     </button>
                     <button
                       onClick={handleAddFarmer}
-                      className="flex-1 py-2.5 bg-kisan-green-500 text-white hover:bg-kisan-green-600 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-md transition-all"
+                      disabled={saving}
+                      className="flex-1 py-3 bg-kisan-green-600 text-white hover:bg-kisan-green-700 disabled:bg-slate-400 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-md transition-all flex items-center justify-center gap-2"
                     >
-                      Save
+                      {saving ? (
+                        <>
+                          <Loader2 className="w-3 h-3 animate-spin" />
+                          Saving...
+                        </>
+                      ) : 'Save'}
                     </button>
                   </div>
                 </motion.div>
@@ -390,15 +504,21 @@ Generated by Kisan-Setu • Gram Panchayat Module
               />
             </div>
 
+            {dataMode === 'live' && farmers.length === 0 && (
+              <p className="text-[10px] font-bold text-slate-500 bg-amber-50 border border-amber-100 rounded-2xl p-4 mb-4">
+                No farmers in the database yet. Use <span className="text-kisan-green-700">+</span> to register someone who visited your panchayat without a smartphone.
+              </p>
+            )}
             <div className="space-y-3 max-h-[calc(100vh-320px)] overflow-y-auto pr-2">
               {filteredFarmers.map((farmer) => (
-                <motion.button
+                <motion.div
                   key={farmer.id}
+                  whileHover={{ x: 4 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => handleSelectFarmer(farmer)}
-                  className={`w-full p-5 rounded-2xl text-left transition-all border-2 group ${
+                  className={`w-full p-5 rounded-2xl text-left transition-all border-2 cursor-pointer relative group ${
                     selectedFarmer?.id === farmer.id 
-                      ? 'bg-kisan-green-500 text-white border-kisan-green-500 shadow-lg' 
+                      ? 'bg-kisan-green-600 text-white border-kisan-green-600 shadow-xl' 
                       : 'bg-slate-50 border-transparent hover:border-slate-200'
                   }`}
                 >
@@ -417,9 +537,17 @@ Generated by Kisan-Setu • Gram Panchayat Module
                         {farmer.area}
                       </p>
                     </div>
-                    <ChevronRight className={`w-4 h-4 ${selectedFarmer?.id === farmer.id ? 'text-white' : 'text-slate-300'}`} />
+                    <div className="flex flex-col items-end gap-2">
+                       <button
+                         onClick={(e) => handleDeleteFarmer(e, farmer)}
+                         className={`p-1.5 rounded-lg transition-colors ${selectedFarmer?.id === farmer.id ? 'hover:bg-white/20 text-white/50 hover:text-white' : 'hover:bg-rose-50 text-slate-300 hover:text-rose-500'}`}
+                       >
+                         <Trash2 className="w-3.5 h-3.5" />
+                       </button>
+                       <ChevronRight className={`w-4 h-4 ${selectedFarmer?.id === farmer.id ? 'text-white' : 'text-slate-300'}`} />
+                    </div>
                   </div>
-                </motion.button>
+                </motion.div>
               ))}
             </div>
           </div>
@@ -476,13 +604,15 @@ Generated by Kisan-Setu • Gram Panchayat Module
                         <RefreshCw className={`w-4 h-4 ${syncing ? 'animate-spin' : ''}`} />
                         {syncing ? 'Syncing...' : 'Live Sync'}
                       </button>
-                      <button
-                        onClick={handleRandomScan}
-                        className="flex items-center gap-2 px-5 py-3 bg-white/15 hover:bg-white/25 text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95"
-                      >
-                        <Sparkles className="w-4 h-4" />
-                        Random Scan
-                      </button>
+                      {!isLive && (
+                        <button
+                          onClick={handleRandomScan}
+                          className="flex items-center gap-2 px-5 py-3 bg-white/15 hover:bg-white/25 text-white rounded-xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95"
+                        >
+                          <Sparkles className="w-4 h-4" />
+                          Random Scan
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -707,6 +837,8 @@ Generated by Kisan-Setu • Gram Panchayat Module
               </motion.div>
             )}
           </AnimatePresence>
+
+          <WarehousePanel />
         </div>
       </div>
     </div>
