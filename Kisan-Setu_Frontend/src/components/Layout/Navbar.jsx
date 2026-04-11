@@ -1,6 +1,7 @@
 import React from 'react';
 import { useApp } from '../../context/AppContext';
-import { Globe, Search } from 'lucide-react';
+import { Search } from 'lucide-react';
+import DataModeToggle from './DataModeToggle';
 
 const Navbar = () => {
   const { language, setLanguage } = useApp();
@@ -21,7 +22,8 @@ const Navbar = () => {
         </div>
       </div>
 
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-4 flex-wrap justify-end">
+        <DataModeToggle />
         <div className="flex items-center gap-2 bg-white p-1 rounded-full shadow-sm border border-slate-100">
           {['en', 'hi', 'mr'].map((lang) => (
             <button

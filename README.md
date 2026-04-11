@@ -1,12 +1,12 @@
 # KisanSetu-HiveX
 
-> Offline-first smart agriculture system using ML and IoT concepts to provide fertilizer and irrigation recommendations based on soil and environmental data.
+> Advanced smart agriculture ecosystem utilizing ML, IoT telemetry, and Star Schema Data Warehousing for predictive analytics and role-based field management.
 
 ---
 
 ## About
 
-KisanSetu is a full-stack smart farming platform (in progress). This repo tracks the evolution from an ML recommendation engine to a complete frontend dashboard.
+KisanSetu-HiveX (v5.0) is a high-performance agricultural platform. It has evolved from a simple ML prediction module into an enterprise-grade analytics system with a dedicated Data Warehouse, Snowflake-style location hierarchy, and robust user authentication.
 
 ---
 
@@ -41,26 +41,58 @@ Added role-based login (Farmer vs Gram Panchayat Operator), a full GP dashboard 
 
 ---
 
+### v5.0 — Analytics Warehouse & Star Schema
+A major architectural upgrade introducing a dedicated **Agricultural Data Warehouse**. Every recommendation is now logged as a "Fact" in a Star Schema, allowing for complex analytics across time, crop types, soil types, and regional hierarchies.
+
+---
+
+## Architecture (v5.0)
+
+### 📊 Data Warehouse (Star Schema)
+The backend now implements a formal Star Schema for agricultural intelligence:
+- **Fact Table**: `fact_recommendation` — Central repository for every prediction event, capturing all sensor vectors and model outputs.
+- **Reference Dimensions**: `dim_crop`, `dim_soil`, `dim_growth_stage`, `dim_fertilizer`.
+- **Time Dimension**: `dim_time` — Granular tracking (Hour/Day/Month/Year) for seasonal trend analysis.
+
+### 📍 Snowflake Location Hierarchy
+Geographic data is organized into a scalable hierarchy:
+- **Panchayat** (Gram Panchayat Level)
+- **Sector** (Field/Block Level)
+- **Farmer** (Individual Record)
+
+### 📡 Telemetry & Auditing
+- **Structured Audit Trail**: `telemetry_event` table logs system actions and data mode transitions.
+- **X-Data-Mode**: Dual-stream processing for "Simulation" vs "Live" IoT telemetry, ensuring data integrity during testing.
+
+---
+
 ## Pages
 
 ### Landing / Login
-Role selection screen — Farmer login (direct access) or Gram Panchayat Operator login with credentials.
+Role selection screen — Farmer login (direct access) or Gram Panchayat Operator login with credentials. Secure authentication for both with persistent sessions.
 
 ![Landing Page](screenshots/Landing%20Page.png)
 
 ---
 
-### Dashboard
+### Dashboard (Field Monitor)
 Real-time field monitoring with sensor cards (soil moisture, pH, temperature, humidity), hydration & temperature trend charts, NPK balance, and system alerts.
 
 ![Dashboard](screenshots/Home_Page.png)
 
 ---
 
-### Optimization Protocol (Inputs)
+### Optimization Protocol (ML Engine)
 Select crop type, growth stage, and soil type — calls the Flask backend and returns a live fertilizer recommendation with dosage, NPK status, and advisory.
 
 ![Inputs](screenshots/Input_Page.png)
+
+---
+
+### IoT Live Mode
+Switch between simulation and live IoT telemetry. When "Live Mode" is active, the system fetches real-time sensor data from the centralized warehouse facts for live field observation.
+
+![Live Mode](screenshots/Live%20Mode.png)
 
 ---
 
@@ -92,19 +124,17 @@ Interactive cost estimator — answers a few questions about connectivity and po
 
 ---
 
-## Features (v4.0)
+## Features (v5.0)
 
-- Role-based login — Farmer and Gram Panchayat Operator
-- Gram Panchayat dashboard — manage multiple farmer records, live sync, export reports
-- Farm Plan Builder with hardware cost estimator
-- Soil type visual previews on hover
-- Live ML prediction via Flask API (`/predict`)
-- Random Forest model — 7 crop types, 4 soil types, 4 growth stages
-- Fertilizer recommendation + dosage + NPK + pH status from model
-- Save record as JSON or export as text report
-- Animated page transitions via Framer Motion
-- Floating AI Voice Assistant (UI only)
-- Fully responsive layout with Tailwind CSS
+- **Star Schema Warehouse** — Enterprise-ready analytics for agricultural data.
+- **Audit Telemetry** — Full audit trail for every recommendation and system event.
+- **Snowflake Location Mapping** — Regional data organization (Panchayat -> Sector).
+- **Dual Flow Telemetry** — Isolated streams for Simulation and Live IoT data.
+- **User Authentication** — Secure Bearer-token sessions with password hashing.
+- **Voice UI Assistant** — Floating AI assistant interface (V5 UI Preview).
+- **Live ML Inference** — Random Forest Classifier serving fertilizer recommendations via Flask
+- **Animated UI** — Fluid transitions via Framer Motion
+- **Fully Responsive** — Mobile-first design using Tailwind CSS v4
 
 ---
 
@@ -112,33 +142,39 @@ Interactive cost estimator — answers a few questions about connectivity and po
 
 | Layer | Stack |
 |---|---|
-| Frontend | React 19, Vite 8, Tailwind CSS v4 |
-| Animations | Framer Motion |
-| Charts | Recharts |
-| Icons | Lucide React |
-| Backend | Python, Flask, Flask-CORS |
-| ML Model | Random Forest Classifier (scikit-learn) |
-| Encoders | joblib, LabelEncoder |
+| **Frontend** | React 19, Vite 8, Tailwind CSS v4 |
+| **Animations** | Framer Motion |
+| **Charts** | Recharts |
+| **Backend** | Python 3.10, Flask, SQLAlchemy |
+| **Warehouse** | Star Schema (Fact/Dimension Architecture) |
+| **ML Engine** | scikit-learn (Random Forest), Joblib |
+| **Auth** | Secure Bearer Tokens |
 
 ---
 
 ## Run Locally
 
-### 1. Backend
+### 1. Environment Setup
 ```bash
-conda create -n RKdemy python=3.10 -y
+# Activate the unified environment
 conda activate RKdemy
-pip install scikit-learn pandas numpy joblib flask flask-cors
-python Kisan-Setu_Backend/app.py
 ```
-Backend runs at `http://127.0.0.1:5000`
 
-### 2. Frontend
+### 2. Backend Initialization
+```bash
+cd Kisan-Setu_Backend
+# Backend seeds the warehouse dimensions automatically on first run
+python app.py
+```
+*Runs at `http://127.0.0.1:5001`*
+
+### 3. Frontend Execution
 ```bash
 cd Kisan-Setu_Frontend
 npm install
 npm run dev
 ```
+*Runs at `http://127.0.0.1:5173`*
 
 ---
 
@@ -149,10 +185,11 @@ npm run dev
 - [x] Flask backend + ML integration
 - [x] Gram Panchayat dashboard + role-based login
 - [x] Farm Plan Builder + cost estimator
-- [ ] Database integration (history logging)
-- [ ] User authentication (persistent sessions)
-- [ ] Docker Container
+- [x] Database integration (History & Telemetry)
+- [x] User authentication (Secure sessions)
+- [x] Updated Build Your Farm Plan Page with acutal researched data
+- [ ] Dockerized Deployment (Compose)
 
 ---
 
-> Built as a hackathon prototype at QuantHacks. Backend + ML integration is the next step.
+> Built for QuantHacks. Leading the future of Decentralized Agricultural Intelligence.

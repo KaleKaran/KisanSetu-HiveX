@@ -1,0 +1,256 @@
+{
+  "Sheet1": [
+    {
+      "Unnamed: 0": NaN,
+      "Unnamed: 1": NaN,
+      "Unnamed: 2": NaN,
+      "Unnamed: 3": NaN,
+      "Unnamed: 4": NaN
+    },
+    {
+      "Unnamed: 0": "Sr. No.",
+      "Unnamed: 1": "Specification",
+      "Unnamed: 2": "Company",
+      "Unnamed: 3": "Price",
+      "Unnamed: 4": "Link"
+    },
+    {
+      "Unnamed: 0": 1,
+      "Unnamed: 1": "5 kWh Lithium Battery, 100 Ah/48 V ",
+      "Unnamed: 2": "MuscleGrid",
+      "Unnamed: 3": 65210,
+      "Unnamed: 4": "https://www.indiamart.com/proddetail/loom-solar-5-kwh-lithium-battery-100-ah-48-v-charges-in-2-3-hours-maintenance-free-2855717558112.html -"
+    },
+    {
+      "Unnamed: 0": NaN,
+      "Unnamed: 1": NaN,
+      "Unnamed: 2": "CAML",
+      "Unnamed: 3": 96500,
+      "Unnamed: 4": "https://amzn.in/d/0iKbZBPY"
+    },
+    {
+      "Unnamed: 0": 2,
+      "Unnamed: 1": "2.2 kW Solar Panels",
+      "Unnamed: 2": "Eastman (10Y Warranty)",
+      "Unnamed: 3": 28756,
+      "Unnamed: 4": "https://amzn.in/d/09rXssu4"
+    },
+    {
+      "Unnamed: 0": NaN,
+      "Unnamed: 1": NaN,
+      "Unnamed: 2": "WAAREE",
+      "Unnamed: 3": 46500,
+      "Unnamed: 4": "https://amzn.in/d/04EqRCgX"
+    },
+    {
+      "Unnamed: 0": 3,
+      "Unnamed: 1": "3 kVA Hybrid Solar Inverter",
+      "Unnamed: 2": "Statcon Energiaa",
+      "Unnamed: 3": 25000,
+      "Unnamed: 4": "https://www.indiamart.com/proddetail/solar-hybrid-inverter-system-2854622167148.html?pos=5&kwd=hybrid%20solar%20inverter&tags=rk:B|plc:1|dt:0|db:01|prc:1|dtp:p|pfs:1|sv:M|rsf:gd|prv:25000|ri:M_B_0_P|em:0-|-res:RC3|ktp:N0|stype:attr=1|mtp:S|isu:1|wc:4|lcf:3|cq:mumbai|qr_nm:gl-gd|cs:20170|com-cf:nl|ptrs:na|mc:154471|cat:598|qry_typ:P|lang:en|tyr:1|qrd:260331|mrd:260404|prdt:260404|msf:hs|pfen:1|gli:U0G1I1|gc:Thane|ic:Thane|scw:1|emt:3|v=4|crs=city-landing|r=4"
+    },
+    {
+      "Unnamed: 0": NaN,
+      "Unnamed: 1": NaN,
+      "Unnamed: 2": "Luminous",
+      "Unnamed: 3": 30579,
+      "Unnamed: 4": "https://amzn.in/d/0g6n5DsW"
+    },
+    {
+      "Unnamed: 0": 4,
+      "Unnamed: 1": "BOS (Structure, Wires, Earthing)",
+      "Unnamed: 2": NaN,
+      "Unnamed: 3": "15,000-20.000",
+      "Unnamed: 4": "Local GI Fabricators"
+    },
+    {
+      "Unnamed: 0": "Total",
+      "Unnamed: 1": NaN,
+      "Unnamed: 2": NaN,
+      "Unnamed: 3": 312545,
+      "Unnamed: 4": NaN
+    },
+    {
+      "Unnamed: 0": NaN,
+      "Unnamed: 1": NaN,
+      "Unnamed: 2": NaN,
+      "Unnamed: 3": NaN,
+      "Unnamed: 4": NaN
+    },
+    {
+      "Unnamed: 0": "Sensor Type",
+      "Unnamed: 1": "Componenet Name",
+      "Unnamed: 2": "per component price (in Rs)",
+      "Unnamed: 3": "quantity per 1 acre",
+      "Unnamed: 4": "buying/ referene link"
+    },
+    {
+      "Unnamed: 0": "ph level",
+      "Unnamed: 1": "JXBS-3001-PH-RS, Soil PH Sensor (RS485)",
+      "Unnamed: 2": 2141,
+      "Unnamed: 3": 7,
+      "Unnamed: 4": "https://robu.in/product/soil-ph-sensor/#tab-description"
+    },
+    {
+      "Unnamed: 0": "moisture level",
+      "Unnamed: 1": "Capacitive Soil Moisture Sensor",
+      "Unnamed: 2": 55,
+      "Unnamed: 3": 15,
+      "Unnamed: 4": "https://robu.in/product/capacitive-soil-moisture-sensor-v2-0/"
+    },
+    {
+      "Unnamed: 0": "npk",
+      "Unnamed: 1": "JXBS-3001-NPK-RS-4, Soil Sensor (RS485) NPK",
+      "Unnamed: 2": 3115,
+      "Unnamed: 3": 4,
+      "Unnamed: 4": "https://robu.in/product/jxbs-3001-npk-rs-4-soil-sensor/"
+    },
+    {
+      "Unnamed: 0": "temperature",
+      "Unnamed: 1": "DHT22 AM2302 Digital Temperature & Humidity Sensor Module",
+      "Unnamed: 2": 107,
+      "Unnamed: 3": 1,
+      "Unnamed: 4": "https://robu.in/product/dht22-digital-temperature-humidity-sensor-temperature-humidity-module-am2302/"
+    },
+    {
+      "Unnamed: 0": "Total",
+      "Unnamed: 1": NaN,
+      "Unnamed: 2": 5418,
+      "Unnamed: 3": 27,
+      "Unnamed: 4": NaN
+    },
+    {
+      "Unnamed: 0": NaN,
+      "Unnamed: 1": NaN,
+      "Unnamed: 2": NaN,
+      "Unnamed: 3": NaN,
+      "Unnamed: 4": NaN
+    },
+    {
+      "Unnamed: 0": NaN,
+      "Unnamed: 1": NaN,
+      "Unnamed: 2": NaN,
+      "Unnamed: 3": NaN,
+      "Unnamed: 4": NaN
+    },
+    {
+      "Unnamed: 0": "wifi router",
+      "Unnamed: 1": "TP-Link EAP225 Outdoor",
+      "Unnamed: 2": 5000,
+      "Unnamed: 3": 1,
+      "Unnamed: 4": "https://www.moglix.com/tp-link-eap225-ac1200-wireless-mu-mimo-gigabit-indoor-outdoor-access-point/mp/msnm9xy11jpmkj?s_kwcid=AL!10177!3!!!!x!!&utm_source=google&utm_medium=cpc&utm_network=Performance_max&utm_campaign=21123901864&adgroup_id=&keyword=&gad_source=4&gad_campaignid=21113767884&gbraid=0AAAAADgd28OrdWWq4a6iG-8pbMoLwi-RT&gclid=Cj0KCQjw7cLOBhDmARIsAGsuA0nIW58ThmgipuyuqrO147Lor5L0GFsNubWM1S966l6IfLbC9wC-ktgaAmNVEALw_wcB"
+    },
+    {
+      "Unnamed: 0": "controller",
+      "Unnamed: 1": "ESP32",
+      "Unnamed: 2": 378,
+      "Unnamed: 3": 1,
+      "Unnamed: 4": "https://robu.in/product/esp32-38pin-development-board-wifibluetooth-ultra-low-power-consumption-dual-core/"
+    },
+    {
+      "Unnamed: 0": NaN,
+      "Unnamed: 1": NaN,
+      "Unnamed: 2": NaN,
+      "Unnamed: 3": NaN,
+      "Unnamed: 4": NaN
+    },
+    {
+      "Unnamed: 0": NaN,
+      "Unnamed: 1": NaN,
+      "Unnamed: 2": NaN,
+      "Unnamed: 3": NaN,
+      "Unnamed: 4": NaN
+    },
+    {
+      "Unnamed: 0": "7 in 1 sensor",
+      "Unnamed: 1": "7 in 1 Soil PH NPK EC Temperature Humidity Sensor Module with RS485 TTL module",
+      "Unnamed: 2": 7000,
+      "Unnamed: 3": 4,
+      "Unnamed: 4": "https://robosap.in/product/7-in-1-soil-ph-npkec-temperature-humidity-sensor-module-with-rs485-ttl-module/?srsltid=AfmBOopQAMTSWKN7CMqrXyevT2-MHzJLku0TNM1_TbteNC8hY5NMUfUk"
+    },
+    {
+      "Unnamed: 0": NaN,
+      "Unnamed: 1": NaN,
+      "Unnamed: 2": NaN,
+      "Unnamed: 3": NaN,
+      "Unnamed: 4": NaN
+    },
+    {
+      "Unnamed: 0": NaN,
+      "Unnamed: 1": NaN,
+      "Unnamed: 2": NaN,
+      "Unnamed: 3": NaN,
+      "Unnamed: 4": NaN
+    },
+    {
+      "Unnamed: 0": NaN,
+      "Unnamed: 1": NaN,
+      "Unnamed: 2": NaN,
+      "Unnamed: 3": NaN,
+      "Unnamed: 4": NaN
+    },
+    {
+      "Unnamed: 0": "Service Name",
+      "Unnamed: 1": "Resource Tier & Storage Spec",
+      "Unnamed: 2": "Company",
+      "Unnamed: 3": "Monthly Cost (Estimated INR)",
+      "Unnamed: 4": NaN
+    },
+    {
+      "Unnamed: 0": "EC2 (Backend)",
+      "Unnamed: 1": "t3.medium (Burstable CPU, 4GB RAM, 20GB EBS SSD)",
+      "Unnamed: 2": "Amazon (AWS)",
+      "Unnamed: 3": "₹250 - ₹400",
+      "Unnamed: 4": NaN
+    },
+    {
+      "Unnamed: 0": "RDS (Database)",
+      "Unnamed: 1": "db.t3.medium (Single-AZ, 20GB General Purpose SSD)",
+      "Unnamed: 2": "Amazon (AWS)",
+      "Unnamed: 3": "₹450 - ₹600",
+      "Unnamed: 4": NaN
+    },
+    {
+      "Unnamed: 0": "S3 (Storage)",
+      "Unnamed: 1": "Standard Object Storage (5GB SSD-backed capacity)",
+      "Unnamed: 2": "Amazon (AWS)",
+      "Unnamed: 3": "₹15 - ₹25",
+      "Unnamed: 4": NaN
+    },
+    {
+      "Unnamed: 0": "Data Transfer",
+      "Unnamed: 1": "Internet Egress (Approx. 2GB sensor data/alerts)",
+      "Unnamed: 2": "Amazon (AWS)",
+      "Unnamed: 3": "₹15 - ₹20",
+      "Unnamed: 4": NaN
+    },
+    {
+      "Unnamed: 0": "IAM",
+      "Unnamed: 1": "Global Identity (Per-user access control/roles)",
+      "Unnamed: 2": "Amazon (AWS)",
+      "Unnamed: 3": 0,
+      "Unnamed: 4": NaN
+    },
+    {
+      "Unnamed: 0": "AWS Shield",
+      "Unnamed: 1": "Standard (Included DDoS protection)",
+      "Unnamed: 2": "Amazon (AWS)",
+      "Unnamed: 3": 0,
+      "Unnamed: 4": NaN
+    },
+    {
+      "Unnamed: 0": "SMS Service",
+      "Unnamed: 1": "GSM Modem (SIM800L) + Python Backend + Raspberry Pi + SIM Card (Offline/Local)",
+      "Unnamed: 2": "Self-Hosted",
+      "Unnamed: 3": "₹150 - ₹300 (Prepaid SMS Pack, excluding hardware)",
+      "Unnamed: 4": NaN
+    },
+    {
+      "Unnamed: 0": "Total Per User",
+      "Unnamed: 1": "Standard Production-Ready Tier",
+      "Unnamed: 2": NaN,
+      "Unnamed: 3": "₹880 - ₹1,345",
+      "Unnamed: 4": NaN
+    }
+  ]
+}

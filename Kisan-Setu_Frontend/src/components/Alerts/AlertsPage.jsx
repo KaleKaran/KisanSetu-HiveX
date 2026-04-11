@@ -1,21 +1,24 @@
 import React from 'react';
 import { useApp } from '../../context/AppContext';
+import { useAuth } from '../../context/AuthContext';
 import { motion } from 'framer-motion';
-import { Bell, AlertTriangle, Info, ShieldAlert, Cpu, Activity, Clock } from 'lucide-react';
+import { ShieldAlert, Cpu, Activity, Clock } from 'lucide-react';
 
 const AlertsPage = () => {
-  const { t } = useApp();
+  const { dataMode } = useAuth();
   const [activeAlerts, setActiveAlerts] = React.useState([1, 2, 3]);
   const [acknowledged, setAcknowledged] = React.useState([]);
+
+  const isLive = dataMode === 'live';
 
   const handleAcknowledge = (id) => {
     setAcknowledged(prev => [...prev, id]);
     setTimeout(() => {
       setActiveAlerts(prev => prev.filter(aId => aId !== id));
-    }, 400); // Wait for animation
+    }, 400); 
   };
 
-  const detailedAlerts = [
+  const detailedAlerts = isLive ? [] : [
     {
       id: 1,
       type: 'critical',
@@ -58,7 +61,7 @@ const AlertsPage = () => {
       </div>
 
       <div className="grid grid-cols-1 gap-6">
-        {detailedAlerts.filter(a => activeAlerts.includes(a.id)).map((alert, index) => (
+        {detailedAlerts.filter(a => activeAlerts.includes(a.id)).map((alert) => (
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ 
@@ -109,14 +112,26 @@ const AlertsPage = () => {
             </div>
           </motion.div>
         ))}
+
+        {isLive && detailedAlerts.length === 0 && (
+           <div className="flex flex-col items-center justify-center p-24 bg-white/50 dark:bg-slate-900/50 rounded-[4rem] border-2 border-dashed border-slate-100 dark:border-slate-800 text-center animate-in fade-in zoom-in-95">
+              <div className="w-20 h-20 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center text-slate-300 mb-6">
+                 <ShieldAlert className="w-10 h-10" />
+              </div>
+              <h3 className="text-2xl font-black text-slate-800 dark:text-white uppercase tracking-tighter">Diagnostic Scan Complete</h3>
+              <p className="text-slate-400 font-bold text-xs uppercase tracking-[0.2em] mt-3">All sectors are synchronized with the central database. <br/>No anomalies detected in the current Live Session.</p>
+           </div>
+        )}
       </div>
 
-      <div className="p-12 bg-slate-100/50 dark:bg-slate-900/30 border-4 border-dashed border-slate-200 dark:border-slate-800 rounded-[4rem] text-center space-y-4">
-          <div className="p-4 bg-white dark:bg-slate-800 w-fit mx-auto rounded-full shadow-sm">
-             <ShieldAlert className="w-6 h-6 text-slate-300 dark:text-slate-600" />
-          </div>
-          <p className="text-[10px] font-black text-slate-400 dark:text-slate-600 uppercase tracking-[0.3em]">All other modules operating within nominal parameters</p>
-      </div>
+      {!isLive && (
+        <div className="p-12 bg-slate-100/50 dark:bg-slate-900/30 border-4 border-dashed border-slate-200 dark:border-slate-800 rounded-[4rem] text-center space-y-4">
+            <div className="p-4 bg-white dark:bg-slate-800 w-fit mx-auto rounded-full shadow-sm">
+               <ShieldAlert className="w-6 h-6 text-slate-300 dark:text-slate-600" />
+            </div>
+            <p className="text-[10px] font-black text-slate-400 dark:text-slate-600 uppercase tracking-[0.3em]">All other modules operating within nominal parameters</p>
+        </div>
+      )}
     </div>
   );
 };
